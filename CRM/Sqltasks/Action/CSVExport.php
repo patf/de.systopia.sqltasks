@@ -36,6 +36,10 @@ class CRM_Sqltasks_Action_CSVExport extends CRM_Sqltasks_Action {
     return E::ts('CSV Export');
   }
 
+  public function getDefaultOrder() {
+    return 500;
+  }
+
   /**
    * Build the configuration UI
    */

@@ -9,7 +9,7 @@ use CRM_Sqltasks_ExtensionUtil as E;
 class CRM_Sqltasks_Upgrader_Base {
 
   /**
-   * @var varies, subclass of ttis
+   * @var varies, subclass of this
    */
   static $instance;
 

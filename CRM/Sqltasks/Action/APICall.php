@@ -38,6 +38,10 @@ class CRM_Sqltasks_Action_APICall extends CRM_Sqltasks_Action {
     return E::ts('API Call');
   }
 
+  public function getDefaultOrder() {
+    return 400;
+  }
+
   /**
    * Build the configuration UI
    */

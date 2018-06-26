@@ -37,6 +37,14 @@ class CRM_Sqltasks_Action_SegmentationExport extends CRM_Sqltasks_Action {
     return E::ts('Segmentation Export');
   }
 
+  public function getDefaultOrder() {
+    return 800;
+  }
+
+  public static function isAvailable() {
+    return function_exists('segmentation_civicrm_install');
+  }
+
   /**
    * Build the configuration UI
    */

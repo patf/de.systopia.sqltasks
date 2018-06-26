@@ -36,6 +36,10 @@ class CRM_Sqltasks_Action_SyncTag extends CRM_Sqltasks_Action_ContactSet {
     return E::ts('Synchronise Tag');
   }
 
+  public function getDefaultOrder() {
+    return 600;
+  }
+
   /**
    * Build the configuration UI
    */

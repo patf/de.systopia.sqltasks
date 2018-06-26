@@ -36,6 +36,10 @@ class CRM_Sqltasks_Action_CreateActivity extends CRM_Sqltasks_Action_ContactSet 
     return E::ts('Create Activity');
   }
 
+  public function getDefaultOrder() {
+    return 300;
+  }
+
   /**
    * Build the configuration UI
    */

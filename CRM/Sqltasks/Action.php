@@ -174,30 +174,49 @@ abstract class CRM_Sqltasks_Action {
   }
 
   /**
-   * Get a list of all potential actions for this task
-   * @todo find automatically?
+   * Whether this action is available in general. Useful for actions that
+   * depend on other extensions
+   *
+   * @return bool
+   */
+  public static function isAvailable() {
+    return TRUE;
+  }
+
+  /**
+   * Whether this action should be included in the template for new jobs
+   *
+   * @return bool
+   */
+  public static function isDefaultTemplateAction() {
+    return TRUE;
+  }
+
+  abstract public function getDefaultOrder();
+
+
+  /**
+   * Get the default template actions
+   *
+   * @param $task
+   *
+   * @return array action instances
+   * @throws \ReflectionException
    */
   public static function getAllActions($task) {
-    // just compile list manually (for now)
-
-    // add Segmentation Extension tasks (de.systopia.segmentation)
-    if (function_exists('segmentation_civicrm_install')) {
-      // this should run before CreateActivity and APICall because those tasks
-      // might depend on segmentation data being available
-      $actions[] = new CRM_Sqltasks_Action_SegmentationAssign($task);
+    $actions = [];
+    foreach (glob(__DIR__ . '/Action/*.php') as $filename) {
+      $className = 'CRM_Sqltasks_Action_' . pathinfo($filename)['filename'];
+      if (class_exists($className)) {
+        $class = new ReflectionClass($className);
+        if ($class->isAbstract() || !$className::isAvailable() || !$className::isDefaultTemplateAction()) {
+          continue;
+        }
+        $instance = new $className($task);
+        $actions[$instance->getDefaultOrder()] = $instance;
+      }
     }
-    $actions[] = new CRM_Sqltasks_Action_CreateActivity($task);
-    $actions[] = new CRM_Sqltasks_Action_APICall($task);
-    $actions[] = new CRM_Sqltasks_Action_CSVExport($task);
-    $actions[] = new CRM_Sqltasks_Action_SyncTag($task);
-    $actions[] = new CRM_Sqltasks_Action_SyncGroup($task);
-
-    if (function_exists('segmentation_civicrm_install')) {
-      $actions[] = new CRM_Sqltasks_Action_SegmentationExport($task);
-    }
-    $actions[] = new CRM_Sqltasks_Action_CallTask($task);
-    $actions[] = new CRM_Sqltasks_Action_ResultHandler($task, 'success', E::ts('Success Handler'));
-    $actions[] = new CRM_Sqltasks_Action_ResultHandler($task, 'error',   E::ts('Error Handler'));
+    ksort($actions);
     return $actions;
   }
 

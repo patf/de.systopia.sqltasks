@@ -36,6 +36,10 @@ class CRM_Sqltasks_Action_SyncGroup extends CRM_Sqltasks_Action_ContactSet {
     return E::ts('Synchronise Group');
   }
 
+  public function getDefaultOrder() {
+    return 700;
+  }
+
   /**
    * Build the configuration UI
    */

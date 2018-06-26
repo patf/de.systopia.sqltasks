@@ -73,4 +73,24 @@ class CRM_Sqltasks_Upgrader extends CRM_Sqltasks_Upgrader_Base {
 
     return TRUE;
   }
+
+
+  public function upgrade_0080() {
+    foreach (CRM_Sqltasks_Task::getAllTasks() as $task) {
+      if (CRM_Sqltasks_Config_Format::getVersion($task->getConfiguration()) == 1) {
+        $upgrader = new CRM_Sqltasks_Upgrader_Config_V1($task->getConfiguration());
+        $upgrader->convertTask($task);
+      }
+    }
+    // main_sql and post_sql are now an action within the json configuration
+    $column_exists = CRM_Core_DAO::singleValueQuery("SHOW COLUMNS FROM `civicrm_sqltasks` LIKE 'main_sql';");
+    if ($column_exists) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_sqltasks` DROP COLUMN `main_sql`;");
+    }
+    $column_exists = CRM_Core_DAO::singleValueQuery("SHOW COLUMNS FROM `civicrm_sqltasks` LIKE 'post_sql';");
+    if ($column_exists) {
+      CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_sqltasks` DROP COLUMN `post_sql`;");
+    }
+    return TRUE;
+  }
 }

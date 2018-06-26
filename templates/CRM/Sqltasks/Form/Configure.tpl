@@ -12,6 +12,25 @@
 | written permission from the original author(s).        |
 +-------------------------------------------------------*}
 
+<style type="text/css">
+{literal}
+.crm-sqlactivity-action-icons a, .crm-sqlactivity-action-icons a:link, .crm-sqlactivity-action-icons a:visited {
+  padding-right: 5px;
+  color: inherit;
+}
+.crm-sqlactivity-action-warning {
+  color: #ffba3b !important;
+}
+.crm-sqlactivity-action-warning-text {
+  display: none;
+  font-weight: normal;
+  padding-right: 5px;
+  color: #F5F6F1;
+  font-size: 85%;
+}
+{/literal}
+</style>
+
 {$form.task_id.html}{$form.enabled.html}{$form.weight.html}
 
 <div class="sql-tasks">
@@ -74,7 +93,41 @@
   {foreach from=$action_list item=action key=action_id}
   <div class="crm-accordion-wrapper crm-sqltask-{$action_id} collapsed">
     {capture assign=enabledfield}{$action_id}_enabled{/capture}
-    <div class="crm-accordion-header active">{$form.$enabledfield.html}&nbsp;{$form.$enabledfield.label}</div>
+    <div class="crm-accordion-header active">
+      <div style="float: left">
+        {$form.$enabledfield.html}&nbsp;{$form.$enabledfield.label}
+      </div>
+      <div style="text-align: right;" class="crm-sqlactivity-action-icons">
+        &nbsp;
+        {if !$action.isResultHandler}
+        {if $action.name eq "Create Activity"}
+        <a title="{ts domain="de.systopia.sqltasks"}Warning{/ts}" href="#" class="crm-sqlactivity-action-warning">
+          <span class="crm-sqlactivity-action-warning-text">
+            {ts domain="de.systopia.sqltasks"}This action might depend on "Assign to Campaign", consider moving it.{/ts}
+          </span>
+          <span>
+            <i class="crm-i fa-exclamation-triangle"></i>
+          </span>
+        </a>
+        {/if}
+        <a title="{ts domain="de.systopia.sqltasks"}Delete Action{/ts}" href="#">
+          <span>
+            <i class="crm-i fa-trash"></i>
+          </span>
+        </a>
+        <a title="{ts domain="de.systopia.sqltasks"}Add Action{/ts}" href="#">
+          <span>
+            <i class="crm-i fa-plus-circle"></i>
+          </span>
+        </a>
+        <a title="{ts domain="de.systopia.sqltasks"}Move Action{/ts}" href="#">
+          <span>
+            <i class="crm-i fa-arrows"></i>
+          </span>
+        </a>
+        {/if}
+      </div>
+    </div>
     <div class="crm-accordion-body">{include file=$action.tpl}</div>
   </div>
   {/foreach}
@@ -128,6 +181,12 @@ function decodeHTML(selector) {
 // decode HTML entities
 decodeHTML("#main_sql");
 decodeHTML("#post_sql");
+
+CRM.$('.crm-sqlactivity-action-warning').hover(function() {
+  CRM.$('.crm-sqlactivity-action-warning-text', this).fadeIn();
+}, function() {
+  CRM.$('.crm-sqlactivity-action-warning-text', this).fadeOut();
+});
 
 </script>
 {/literal}

@@ -113,9 +113,11 @@ class CRM_Sqltasks_Form_Configure extends CRM_Core_Form {
     $actions = CRM_Sqltasks_Action::getAllActions($this->task);
     foreach ($actions as $action) {
       $action->buildForm($this);
-      $action_list[$action->getID()] = array(
+      $action_list[$action->getID()] = [
         'name' => $action->getName(),
-        'tpl'  => $action->getFormTemplate());
+        'tpl'  => $action->getFormTemplate(),
+        'isResultHandler' => $action->isResultHandler(),
+      ];
     }
     $this->assign('action_list', $action_list);
 

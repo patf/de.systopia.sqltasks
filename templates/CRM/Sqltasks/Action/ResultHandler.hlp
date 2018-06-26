@@ -17,7 +17,8 @@
 {/htxt}
 
 {htxt id='id-handler-always'}
-  <p>{ts domain="de.systopia.sqltasks"}If you check this, the success handler will be always be executed unless there was an error. Otherwise it will only be sent if any of the tasks have actually "done something".{/ts}</p>
+  <p>{ts domain="de.systopia.sqltasks"}If you check this, the success handler will be always be executed unless there was an error. Otherwise it will only be sent if any of the actions have actually processed any rows.{/ts}</p>
+  <p>{ts domain="de.systopia.sqltasks"}Note that the success handler will always run if you're using a "Synchronise Tag" or "Synchronise Group" action. "Run SQL" actions aren't considered at all.{/ts}</p>
 {/htxt}
 
 {htxt id='id-handler-attach-log'}

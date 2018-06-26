@@ -35,6 +35,10 @@ class CRM_Sqltasks_Action_CallTask extends CRM_Sqltasks_Action {
     return E::ts('Run SQL Task(s)');
   }
 
+  public function getDefaultOrder() {
+    return 900;
+  }
+
   /**
    * Build the configuration UI
    */

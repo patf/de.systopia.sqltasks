@@ -42,6 +42,14 @@ class CRM_Sqltasks_Action_SegmentationAssign extends CRM_Sqltasks_Action {
     return E::ts('Assign to Campaign (Segmentation)');
   }
 
+  public function getDefaultOrder() {
+    return 200;
+  }
+
+  public static function isAvailable() {
+    return function_exists('segmentation_civicrm_install');
+  }
+
   /**
    * Build the configuration UI
    */
