@@ -195,6 +195,7 @@ abstract class CRM_Sqltasks_Action {
     if (function_exists('segmentation_civicrm_install')) {
       $actions[] = new CRM_Sqltasks_Action_SegmentationExport($task);
     }
+    $actions[] = new CRM_Sqltasks_Action_CallTask($task);
     $actions[] = new CRM_Sqltasks_Action_ResultHandler($task, 'success', E::ts('Success Handler'));
     $actions[] = new CRM_Sqltasks_Action_ResultHandler($task, 'error',   E::ts('Error Handler'));
     return $actions;
