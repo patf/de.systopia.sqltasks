@@ -448,22 +448,94 @@ class CRM_Sqltasks_Task {
    */
   public function shouldRun() {
     $last_execution = strtotime($this->getAttribute('last_execution'));
+    // if never ran, we need any day to compare
+    if (empty($last_execution)) {
+      $last_execution = strtotime('1970-01-01 00:00:00');
+    }
     $scheduled = $this->getAttribute('scheduled');
 
-    // if this is the first time, or it should always be executed
+    // if it should always be executed
     //  => YES!
-    if (empty($last_execution) || $scheduled == 'always') {
+    if ($scheduled == 'always') {
       return TRUE;
     }
 
-    // get the comparison date format
-    $date_format = self::getDateFormatForSchedulingOption($scheduled);
-    $last_exec = date($date_format, $last_execution);
-    $now       = date($date_format);
+    if (!empty($this->config['scheduled_month'])) {
+      $scheduled_month = str_pad($this->config['scheduled_month'], 2, '0', STR_PAD_LEFT);
+    }
+    else {
+      // January
+      $scheduled_month = '01';
+    }
+    if (!empty($this->config['scheduled_weekday'])) {
+      $scheduled_weekday = $this->config['scheduled_weekday'];
+    }
+    else {
+      $scheduled_weekday = '1';
+    }
+    if (!empty($this->config['scheduled_day'])) {
+      $scheduled_day = str_pad($this->config['scheduled_day'], 2, '0', STR_PAD_LEFT);
+    }
+    else {
+      $scheduled_day = '01';
+    }
+    if (!empty($this->config['scheduled_hour'])) {
+      $scheduled_hour = str_pad($this->config['scheduled_hour'], 2, '0', STR_PAD_LEFT);
+    }
+    else {
+      $scheduled_hour = '00';
+    }
+    if (!empty($this->config['scheduled_minute'])) {
+      $scheduled_minute = str_pad($this->config['scheduled_minute'], 2, '0', STR_PAD_LEFT);
+    }
+    else {
+      $scheduled_minute = '00';
+    }
 
-    // if those two strings are the same, that means
-    //   we have already executed in this interval
-    return $last_exec != $now;
+    $now = CRM_Utils_Date::currentDBDate();
+    // last time the task was executed, with minute resolution
+    $lastFormattedDate = date('YmdHi', $last_execution);
+    // current date with minute resolution
+    $currentFormattedDate = date('YmdHi', strtotime($now));
+    // current execution slot date according to the scheduler settings.
+    // it's set based on the current time and scheduler settings
+    // examples (assuming now = June 11th, 2019 13:00:
+    // | frequency | month | day | hour | minute | $currentScheduledDate |
+    // | hourly    |       |     |      |     30 | 201906111330          |
+    // | daily     |       |     |   14 |     30 | 201906111430          |
+    // | weekly    |       | Wed |   14 |     30 | 201924314-30          |
+    // | monthly   |       |  12 |   14 |     30 | 201906121430          |
+    // | annually  |   Jul |  13 |   14 |     30 | 201907131430          |
+    $currentScheduledDate = NULL;
+    switch ($scheduled) {
+      case 'hourly':
+        $currentScheduledDate = date('YmdH', strtotime($now)) . $scheduled_minute;
+        break;
+
+      case 'daily':
+        $currentScheduledDate = date('Ymd', strtotime($now)) . $scheduled_hour . $scheduled_minute;
+        break;
+
+      case 'weekly':
+        $currentFormattedDate = date('oWNHi', strtotime($now));
+        $lastFormattedDate = date('oWNHi', $last_execution);
+        $currentScheduledDate = date('oW', strtotime($now)) . $scheduled_weekday . $scheduled_hour . $scheduled_minute;
+        break;
+
+      case 'monthly':
+        $currentScheduledDate = date('Ym', strtotime($now)) . $scheduled_day . $scheduled_hour . $scheduled_minute;
+        break;
+
+      case 'yearly':
+        $currentScheduledDate = date('Y', strtotime($now)) . $scheduled_month . $scheduled_day . $scheduled_hour . $scheduled_minute;
+        break;
+
+    }
+    // checks:
+    // - is the current date after or on the next execution date (i.e. is it due?)
+    // AND
+    // - was the last execution before the next execution date (i.e. was the task already executed?)
+    return $currentFormattedDate >= $currentScheduledDate && $lastFormattedDate < $currentScheduledDate;
   }
 
   /**
@@ -504,28 +576,6 @@ class CRM_Sqltasks_Task {
     }
 
     return $frequencies;
-  }
-
-  /**
-   * get the option for scheduling (simple version)
-   */
-  public static function getDateFormatForSchedulingOption($option) {
-    switch ($option) {
-      case 'always':
-        return ('YmdHis');
-      case 'hourly':
-        return ('YmdH');
-      case 'daily':
-        return ('Ymd');
-      case 'weekly':
-        return ('YW');
-      case 'monthly':
-        return ('Ym');
-      case 'yearly':
-        return ('Y');
-      default:
-        throw new Exception("Illegal scheduling option {$option}.", 1);
-    }
   }
 
   /**
