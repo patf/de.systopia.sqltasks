@@ -41,6 +41,7 @@ class CRM_Sqltasks_Task {
   protected $status;
   protected $error_count;
   protected $log_messages;
+  protected $log_to_file = FALSE;
 
   /**
    * Constructor
@@ -111,7 +112,11 @@ class CRM_Sqltasks_Task {
    * append log messages
    */
   public function log($message) {
+    $message = "[Task {$this->getID()}] {$message}";
     $this->log_messages[] = $message;
+    if ($this->log_to_file) {
+      CRM_Core_Error::debug_log_message($message, FALSE, 'sqltasks');
+    }
   }
 
   /**
@@ -216,7 +221,10 @@ class CRM_Sqltasks_Task {
   /**
    * Executes the given task
    */
-  public function execute() {
+  public function execute($params = []) {
+    if (!empty($params['log_to_file'])) {
+      $this->log_to_file = TRUE;
+    }
     $this->status = 'running';
     $this->error_count = 0;
     $this->resetLog();
@@ -316,7 +324,11 @@ class CRM_Sqltasks_Task {
       $this->log("Script '{$script_name}' executed in {$runtime}s.");
     } catch (Exception $e) {
       $this->error_count += 1;
-      $this->log("Script '{$script_name}' failed: " . $e -> getMessage());
+      $message = $e->getMessage();
+      if ($e instanceof PEAR_Exception && $e->getCause() instanceof DB_Error) {
+        $message .= ' Details: ' . $e->getCause()->getUserInfo();
+      }
+      $this->log("Script '{$script_name}' failed: " . $message);
     }
   }
 
@@ -406,7 +418,7 @@ class CRM_Sqltasks_Task {
   /**
    * main dispatcher, triggered by a scheduled Job
    */
-  public static function runDispatcher() {
+  public static function runDispatcher($params = []) {
     $results = array();
 
     // FIRST reset timed out tasks (after 23 hours)
@@ -426,7 +438,7 @@ class CRM_Sqltasks_Task {
       $tasks = CRM_Sqltasks_Task::getExecutionTaskList();
       foreach ($tasks as $task) {
         if ($task->shouldRun()) {
-          $results[] = $task->execute();
+          $results[] = $task->execute($params);
         }
       }
 
@@ -435,7 +447,7 @@ class CRM_Sqltasks_Task {
       $tasks = CRM_Sqltasks_Task::getParallelExecutionTaskList();
       foreach ($tasks as $task) {
         if ($task->shouldRun()) {
-          $results[] = $task->execute();
+          $results[] = $task->execute($params);
         }
       }
     }
