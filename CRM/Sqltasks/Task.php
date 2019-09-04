@@ -251,7 +251,11 @@ class CRM_Sqltasks_Task {
       CRM_Core_DAO::executeQuery("UPDATE `civicrm_sqltasks` SET last_execution = NOW(), running_since = NOW() WHERE id = {$this->task_id};");
     }
 
+    $random_value = CRM_Utils_String::createRandom(16, CRM_Utils_String::ALPHANUMERIC);
+
     $main_sql = $this->getAttribute('main_sql');
+    $this->resolveTokens($main_sql, $random_value, 'random');
+
     if ($this->getAttribute('input_required') && !empty($params['input_val'])) {
       $input_val = CRM_Core_DAO::escapeString($params['input_val']);
       $main_sql = "SET @input = '{$input_val}'; \r\n {$main_sql}";
@@ -263,6 +267,10 @@ class CRM_Sqltasks_Task {
     // 2. run the actions
     $actions = CRM_Sqltasks_Action::getAllActiveActions($this);
     foreach ($actions as $action) {
+      $action_table = $action->getConfigValue('table');
+      $this->resolveTokens($action_table, $random_value, 'random');
+      $action->setConfigValue('table', $action_table);
+
       if ($action->isResultHandler()) {
         continue; // result handlers will only be executed at the end
       }
@@ -290,8 +298,11 @@ class CRM_Sqltasks_Task {
       }
     }
 
+    $post_sql = $this->getAttribute('post_sql');
+    $this->resolveTokens($post_sql, $random_value, 'random');
+
     // 3. run the post SQL
-    $this->executeSQLScript($this->getAttribute('post_sql'), "Post SQL");
+    $this->executeSQLScript($post_sql, "Post SQL");
 
     // 4. update/close the task
     $task_runtime = (int) (microtime(TRUE) * 1000) - $task_timestamp;
@@ -695,5 +706,14 @@ class CRM_Sqltasks_Task {
    */
   public static function getLastFile() {
     return end(self::$files);
+  }
+
+  /**
+   * Replace all tokens in the string with data from the value
+   */
+  protected function resolveTokens(&$string, $value, $token_value) {
+    $token = preg_quote('{' . "$token_value") . '(\|([^\}]+?))?' . preg_quote('}');
+
+    $string = preg_replace("/([^\{])?$token/", "\${1}$value", $string);
   }
 }

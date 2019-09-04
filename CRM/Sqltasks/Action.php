@@ -79,6 +79,18 @@ abstract class CRM_Sqltasks_Action {
   }
 
   /**
+   * Set a single config value
+   */
+  public function setConfigValue($name, $value, $prefix = 'ID') {
+    if ($prefix == 'ID') {
+      $prefix = $this->getID() . '_';
+    }
+
+    $key = $prefix . $name;
+    $this->config[$key] = $value;
+  }
+
+  /**
    * Get a list of ints from the string
    */
   protected function getIDList($string) {
