@@ -198,6 +198,8 @@ class CRM_Sqltasks_Action_SyncTag extends CRM_Sqltasks_Action_ContactSet {
     if (empty($table_name)) {
       return 'civicrm_contact';
     } else {
+      $this->resolveTableToken($table_name);
+
       return $table_name;
     }
   }

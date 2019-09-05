@@ -28,12 +28,8 @@ abstract class CRM_Sqltasks_Action {
   protected $task = NULL;
   protected $config = NULL;
   protected $has_executed = TRUE;
+  protected $context = [];
 
-  /**
-   * CRM_Sqltasks_Action constructor.
-   *
-   * @param $task CRM_Sqltasks_Task task
-   */
   public function __construct($task) {
     $this->task = $task;
     $this->config = $task->getConfiguration();
@@ -76,18 +72,6 @@ abstract class CRM_Sqltasks_Action {
     } else {
       return NULL;
     }
-  }
-
-  /**
-   * Set a single config value
-   */
-  public function setConfigValue($name, $value, $prefix = 'ID') {
-    if ($prefix == 'ID') {
-      $prefix = $this->getID() . '_';
-    }
-
-    $key = $prefix . $name;
-    $this->config[$key] = $value;
   }
 
   /**
@@ -291,6 +275,24 @@ abstract class CRM_Sqltasks_Action {
    */
   public function hasExecuted() {
     return $this->has_executed;
+  }
+
+  /**
+   * Set execution context
+   *
+   * @param array $context
+   */
+  public function setContext(array $context) {
+    $this->context = $context;
+  }
+
+  /**
+   * Replace all tokens in the string with data from the context
+   *
+   * @param $string
+   */
+  public function resolveTableToken(&$string) {
+    $string = str_replace('{random}', $this->context['random'], $string);
   }
 
 }

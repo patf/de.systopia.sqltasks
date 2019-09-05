@@ -254,7 +254,7 @@ class CRM_Sqltasks_Task {
     $random_value = CRM_Utils_String::createRandom(16, CRM_Utils_String::ALPHANUMERIC);
 
     $main_sql = $this->getAttribute('main_sql');
-    $this->resolveTokens($main_sql, $random_value, 'random');
+    $this->resolveSQLScriptToken($main_sql, $random_value);
 
     if ($this->getAttribute('input_required') && !empty($params['input_val'])) {
       $input_val = CRM_Core_DAO::escapeString($params['input_val']);
@@ -267,9 +267,7 @@ class CRM_Sqltasks_Task {
     // 2. run the actions
     $actions = CRM_Sqltasks_Action::getAllActiveActions($this);
     foreach ($actions as $action) {
-      $action_table = $action->getConfigValue('table');
-      $this->resolveTokens($action_table, $random_value, 'random');
-      $action->setConfigValue('table', $action_table);
+      $action->setContext(['random' => $random_value]);
 
       if ($action->isResultHandler()) {
         continue; // result handlers will only be executed at the end
@@ -299,7 +297,7 @@ class CRM_Sqltasks_Task {
     }
 
     $post_sql = $this->getAttribute('post_sql');
-    $this->resolveTokens($post_sql, $random_value, 'random');
+    $this->resolveSQLScriptToken($post_sql, $random_value);
 
     // 3. run the post SQL
     $this->executeSQLScript($post_sql, "Post SQL");
@@ -710,10 +708,11 @@ class CRM_Sqltasks_Task {
 
   /**
    * Replace all tokens in the string with data from the value
+   *
+   * @param $string
+   * @param $value
    */
-  protected function resolveTokens(&$string, $value, $token_value) {
-    $token = preg_quote('{' . "$token_value") . '(\|([^\}]+?))?' . preg_quote('}');
-
-    $string = preg_replace("/([^\{])?$token/", "\${1}$value", $string);
+  protected function resolveSQLScriptToken(&$string, $value) {
+    $string = str_replace('{random}', $value, $string);
   }
 }
