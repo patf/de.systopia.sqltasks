@@ -33,8 +33,6 @@ class CRM_Sqltasks_Task {
     'last_runtime'    => 'Integer',
     'parallel_exec'   => 'Integer',
     'run_permissions' => 'String',
-    'main_sql'        => 'String',
-    'post_sql'        => 'String',
     'input_required'  => 'Integer',
     );
 
@@ -251,24 +249,26 @@ class CRM_Sqltasks_Task {
       CRM_Core_DAO::executeQuery("UPDATE `civicrm_sqltasks` SET last_execution = NOW(), running_since = NOW() WHERE id = {$this->task_id};");
     }
 
-    $main_sql = $this->getAttribute('main_sql');
-    if ($this->getAttribute('input_required') && !empty($params['input_val'])) {
-      $input_val = CRM_Core_DAO::escapeString($params['input_val']);
-      $main_sql = "SET @input = '{$input_val}'; \r\n {$main_sql}";
-    };
+    // TODO: move this to action code
+    /* $main_sql = $this->getAttribute('main_sql');
+;
 
     // 1. run the main SQL
-    $this->executeSQLScript($main_sql, "Main SQL");
+    $this->executeSQLScript($main_sql, "Main SQL"); */
 
-    // 2. run the actions
     $actions = CRM_Sqltasks_Action::getAllActiveActions($this);
-    foreach ($actions as $action) {
-      if ($action->isResultHandler()) {
-        continue; // result handlers will only be executed at the end
-      }
+    $context = [
+      'actions' => $actions,
+    ];
+    if ($this->getAttribute('input_required') && !empty($params['input_val'])) {
+      $context['input_val'] = $params['input_val'];
+    }
 
+
+    foreach ($actions as $action) {
       $action_name = $action->getName();
       $timestamp = microtime(TRUE);
+      $action->setContext($context);
 
       // check action configuration
       try {
@@ -290,10 +290,7 @@ class CRM_Sqltasks_Task {
       }
     }
 
-    // 3. run the post SQL
-    $this->executeSQLScript($this->getAttribute('post_sql'), "Post SQL");
-
-    // 4. update/close the task
+    // update/close the task
     $task_runtime = (int) (microtime(TRUE) * 1000) - $task_timestamp;
     CRM_Core_DAO::executeQuery("UPDATE `civicrm_sqltasks` SET running_since = NULL, last_runtime = {$task_runtime} WHERE id = {$this->task_id};");
     if ($this->error_count) {
@@ -302,12 +299,12 @@ class CRM_Sqltasks_Task {
       $this->status = 'success';
     }
 
-    // 5. run result handlers
-    foreach ($actions as $action) {
+    // TODO: move this to action code
+    /* foreach ($actions as $action) {
       if ($action->isResultHandler()) {
         $action->executeResultHandler($actions);
       }
-    }
+    }*/
 
     return $this->log_messages;
   }
@@ -359,6 +356,8 @@ class CRM_Sqltasks_Task {
 
   /**
    * Get a list of all tasks
+   *
+   * @return CRM_Sqltasks_Task[]
    */
   public static function getAllTasks() {
     return self::getTasks('SELECT * FROM civicrm_sqltasks ORDER BY weight ASC, id ASC');
@@ -380,6 +379,8 @@ class CRM_Sqltasks_Task {
 
   /**
    * Load a list of tasks based on the data yielded by the given SQL query
+   *
+   * @return CRM_Sqltasks_Task[]
    */
   public static function getTasks($sql_query) {
     $tasks = array();

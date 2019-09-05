@@ -35,9 +35,11 @@ class CRM_Sqltasks_Form_Configure extends CRM_Core_Form {
       throw new Exception("Invalid task id (tid) given.", 1);
     } elseif ($task_id) {
       $this->task = CRM_Sqltasks_Task::getTask($task_id);
+      $actions = CRM_Sqltasks_Action::getAllActions($this->task);
       CRM_Utils_System::setTitle(E::ts("Configure SQL Task '%1'", array(1 => $this->task->getAttribute('name'))));
     } else {
       $this->task = new CRM_Sqltasks_Task($task_id);
+      $actions = CRM_Sqltasks_Action::getTemplateActions($this->task);
       CRM_Utils_System::setTitle(E::ts("Create new SQL Task"));
     }
 
@@ -70,26 +72,6 @@ class CRM_Sqltasks_Form_Configure extends CRM_Core_Form {
       'category',
       E::ts('Category'),
       array('class' => 'huge', 'maxlength' => '64'),
-      FALSE
-    );
-
-    $this->add(
-      'textarea',
-      'main_sql',
-      E::ts('Main Script (SQL)'),
-      array('rows' => 8,
-            'style' => 'font-family: monospace, monospace !important; width: 95%; min-width: 240px',
-      ),
-      FALSE
-    );
-
-    $this->add(
-      'textarea',
-      'post_sql',
-      E::ts('Cleanup Script (SQL)'),
-      array('rows' => 8,
-            'style' => 'font-family: monospace, monospace !important; width: 95%; min-width: 240px',
-      ),
       FALSE
     );
 
@@ -163,7 +145,6 @@ class CRM_Sqltasks_Form_Configure extends CRM_Core_Form {
 
     // BUILD ACTIONS
     $action_list = array();
-    $actions = CRM_Sqltasks_Action::getAllActions($this->task);
     foreach ($actions as $action) {
       $action->buildForm($this);
       $action_list[$action->getID()] = array(
@@ -196,13 +177,22 @@ class CRM_Sqltasks_Form_Configure extends CRM_Core_Form {
     $current_values['parallel_exec'] = $this->task->getAttribute('parallel_exec');
     $current_values['run_permissions'] = explode(',', $this->task->getAttribute('run_permissions'));
     $current_values['input_required'] = $this->task->getAttribute('input_required');
-    $current_values['main_sql'] = $this->task->getAttribute('main_sql');
-    $current_values['post_sql'] = $this->task->getAttribute('post_sql');
 
     $configuration = $this->task->getConfiguration();
-    foreach ($configuration as $key => $value) {
-      $current_values[$key] = $value;
+    if (!empty($configuration['actions'])) {
+      foreach ($configuration['actions'] as $actionConfig) {
+        $action = CRM_Sqltasks_Action::getActionInstance($actionConfig, $this->task);
+        foreach ($actionConfig as $key => $value) {
+          $current_values[$action->getID() . '_' . $key] = $value;
+        }
+      }
     }
+    else {
+      // enable "Run SQL Script" and "Run Cleanup SQL Script" by default
+      $current_values['sql_enabled'] = 1;
+      $current_values['post_sql_enabled'] = 1;
+    }
+
     return $current_values;
   }
 

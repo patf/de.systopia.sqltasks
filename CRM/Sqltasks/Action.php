@@ -28,15 +28,17 @@ abstract class CRM_Sqltasks_Action {
   protected $task = NULL;
   protected $config = NULL;
   protected $has_executed = TRUE;
+  protected $context = [];
 
   /**
    * CRM_Sqltasks_Action constructor.
    *
    * @param $task CRM_Sqltasks_Task task
+   * @param array $config
    */
-  public function __construct($task) {
+  public function __construct(CRM_Sqltasks_Task $task, array $config) {
     $this->task = $task;
-    $this->config = $task->getConfiguration();
+    $this->config = $config;
     $this->has_executed = TRUE;
   }
 
@@ -56,6 +58,13 @@ abstract class CRM_Sqltasks_Action {
   abstract public function execute();
 
   /**
+   * Get default template order
+   *
+   * @return int
+   */
+  abstract public function getDefaultOrder();
+
+  /**
    * log to the task (during execution)
    */
   public function log($message) {
@@ -65,14 +74,9 @@ abstract class CRM_Sqltasks_Action {
   /**
    * Get the given key from the config
    */
-  public function getConfigValue($name, $prefix = 'ID') {
-    if ($prefix == 'ID') {
-      $prefix = $this->getID() . '_';
-    }
-
-    $key = $prefix . $name;
-    if (isset($this->config[$key])) {
-      return $this->config[$key];
+  public function getConfigValue($name) {
+    if (isset($this->config[$name])) {
+      return $this->config[$name];
     } else {
       return NULL;
     }
@@ -178,30 +182,69 @@ abstract class CRM_Sqltasks_Action {
   }
 
   /**
-   * Get a list of all potential actions for this task
-   * @todo find automatically?
+   * Get all actions based on the task config
+   *
+   * @param CRM_Sqltasks_Task $task
+   *
+   * @return array action instances
+   * @throws \Exception
    */
-  public static function getAllActions($task) {
-    // just compile list manually (for now)
-
-    // add Segmentation Extension tasks (de.systopia.segmentation)
-    if (CRM_Sqltasks_Utils::isSegmentationInstalled()) {
-      // this should run before CreateActivity and APICall because those tasks
-      // might depend on segmentation data being available
-      $actions[] = new CRM_Sqltasks_Action_SegmentationAssign($task);
+  public static function getAllActions(CRM_Sqltasks_Task $task) {
+    $actions = [];
+    foreach ($task->getConfiguration()['actions'] as $action) {
+      $actions[] = self::getActionInstance($action, $task);
     }
-    $actions[] = new CRM_Sqltasks_Action_CreateActivity($task);
-    $actions[] = new CRM_Sqltasks_Action_APICall($task);
-    $actions[] = new CRM_Sqltasks_Action_CSVExport($task);
-    $actions[] = new CRM_Sqltasks_Action_SyncTag($task);
-    $actions[] = new CRM_Sqltasks_Action_SyncGroup($task);
+    return $actions;
+  }
 
-    if (CRM_Sqltasks_Utils::isSegmentationInstalled()) {
-      $actions[] = new CRM_Sqltasks_Action_SegmentationExport($task);
+  /**
+   * Create an action instance based on its config and a task
+   *
+   * @param array $config action config
+   * @param \CRM_Sqltasks_Task $task
+   *
+   * @return \CRM_Sqltasks_Action
+   * @throws \Exception
+   */
+  public static function getActionInstance(array $config, CRM_Sqltasks_Task $task) {
+    $className = $config['type'];
+    if (!class_exists($className)) {
+      throw new Exception("Unknown action type '{$className}'");
     }
-    $actions[] = new CRM_Sqltasks_Action_CallTask($task);
-    $actions[] = new CRM_Sqltasks_Action_ResultHandler($task, 'success', E::ts('Success Handler'));
-    $actions[] = new CRM_Sqltasks_Action_ResultHandler($task, 'error',   E::ts('Error Handler'));
+
+    if (!$className::isSupported()) {
+      throw new Exception("Action type '{$className}' is not supported. Please make sure all dependencies are satisfied.");
+    }
+
+    return new $className($task, $config);
+  }
+
+  /**
+   * Get the default template actions
+   *
+   * @todo Currently, this only supports actions defined in this extension.
+   *   A better approach would be to allow extensions to add actions, similar to
+   *   how it's done in CiviRules (though the implementation may vary).
+   *
+   * @param $task
+   *
+   * @return array action instances
+   * @throws \ReflectionException
+   */
+  public static function getTemplateActions($task) {
+    $actions = [];
+    foreach (glob(__DIR__ . '/Action/*.php') as $filename) {
+      $className = 'CRM_Sqltasks_Action_' . pathinfo($filename)['filename'];
+      if (class_exists($className)) {
+        $class = new ReflectionClass($className);
+        if ($class->isAbstract() || !$className::isSupported() || !$className::isDefaultTemplateAction()) {
+          continue;
+        }
+        $action = self::getActionInstance(['type' => $className], $task);
+        $actions[$action->getDefaultOrder()] = $action;
+      }
+    }
+    ksort($actions);
     return $actions;
   }
 
@@ -211,7 +254,7 @@ abstract class CRM_Sqltasks_Action {
    */
   public static function getAllActiveActions($task) {
     $actions = self::getAllActions($task);
-    $active_actions = array();
+    $active_actions = [];
     foreach ($actions as $action) {
       if ($action->isEnabled()) {
         $active_actions[] = $action;
@@ -253,6 +296,15 @@ abstract class CRM_Sqltasks_Action {
   }
 
   /**
+   * Set execution context
+   *
+   * @param array $context
+   */
+  public function setContext(array $context) {
+    $this->context = $context;
+  }
+
+  /**
    * If this action wants to use the
    *  has_executed FLAG (used for success handler)
    *  then it needs to first reset the FLAG
@@ -280,6 +332,25 @@ abstract class CRM_Sqltasks_Action {
    */
   public function hasExecuted() {
     return $this->has_executed;
+  }
+
+  /**
+   * Whether this action is supported in this environment. Useful for actions
+   * that depend on other extensions or similar.
+   *
+   * @return bool
+   */
+  public static function isSupported() {
+    return TRUE;
+  }
+
+  /**
+   * Whether this action should be included in the template for new tasks
+   *
+   * @return bool
+   */
+  public static function isDefaultTemplateAction() {
+    return TRUE;
   }
 
 }
