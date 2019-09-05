@@ -30,6 +30,11 @@ abstract class CRM_Sqltasks_Action {
   protected $has_executed = TRUE;
   protected $context = [];
 
+  /**
+   * CRM_Sqltasks_Action constructor.
+   *
+   * @param $task CRM_Sqltasks_Task task
+   */
   public function __construct($task) {
     $this->task = $task;
     $this->config = $task->getConfiguration();
