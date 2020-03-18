@@ -23,14 +23,6 @@
   clear: both;
 }
 
-select.pixelInput {
-  display: block !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  border: none !important;
-}
-
 .input-checkbox {
   cursor: pointer !important;
 }

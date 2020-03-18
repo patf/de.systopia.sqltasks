@@ -951,21 +951,7 @@
         }
 
         $scope.statusChanged = function(value, fieldId) {
-          CRM.$(function($) {
-            $scope.ctrl.model.segments = "";
-            var inputStyles =  {
-              'width' : '100%',
-              'max-width' : '300px',
-              'font-family' : 'monospace, monospace !important',
-              'box-sizing' : 'border-box',
-              'height' : '28px'
-            };
-            setTimeout(() => {
-              $("#" + fieldId)
-                .css(inputStyles)
-                .select2();
-            }, 0);
-          });
+          $scope.ctrl.model.segments = "";
           if (getBooleanFromNumber(value)) {
             CRM.api3("Segmentation", "segmentlist", {
               campaign_id: value
@@ -1126,27 +1112,12 @@
       },
       controller: function($scope) {
         $scope.inputMaxWidth = angular.isDefined($scope.inputMaxWidth) ? $scope.inputMaxWidth : "300px";
-        var selectStyles = {
+        $scope.selectStyles = {
           'width' : "100%",
           'max-width' : $scope.inputMaxWidth,
           'box-sizing' : 'border-box',
           'height' : '28px'
         };
-
-        if (angular.isDefined($scope.isDataLoaded) && $scope.isDataLoaded == false) {
-          var timerId = setInterval(function() {
-            if ($scope.isDataLoaded) {
-              $("#" + $scope.fieldId).css(selectStyles).select2();
-              clearInterval(timerId);
-            }
-          }, 300);
-        } else {
-          CRM.$(function($) {
-            setTimeout(function() {
-              $("#" + $scope.fieldId).css(selectStyles).select2();
-            }, 1500);
-          });
-        }
       }
     };
   });
@@ -1168,26 +1139,12 @@
       },
       controller: function($scope) {
         $scope.inputMaxWidth = angular.isDefined($scope.inputMaxWidth) ? $scope.inputMaxWidth : "300px";
-        var selectStyles = {
+        $scope.selectStyles = {
           'width' : "100%",
           'max-width' : $scope.inputMaxWidth,
           'box-sizing' : 'border-box',
-          'height' : '28px'
+          'height' : '100px'
         };
-        if (angular.isDefined($scope.isDataLoaded) && $scope.isDataLoaded == false) {
-          var timerId = setInterval(function() {
-            if ($scope.isDataLoaded) {
-              $("#" + $scope.fieldId).css(selectStyles).select2();
-              clearInterval(timerId);
-            }
-          }, 300);
-        } else {
-          CRM.$(function($) {
-            setTimeout(function() {
-              $("#" + $scope.fieldId).css(selectStyles).select2();
-            }, 1500);
-          });
-        }
       }
     };
   });

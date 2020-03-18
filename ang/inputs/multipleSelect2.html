@@ -9,7 +9,7 @@
         <a ng-click="helpAction()" ng-if="showHelpIcon" href="javascript:;" title="Help" class="helpicon"></a>
     </div>
     <div class="content">
-        <select ng-model="componentModel" multiple name="{{fieldId}}" id="{{fieldId}}"
+        <select ng-style="selectStyles" ng-model="componentModel" multiple name="{{fieldId}}" id="{{fieldId}}"
                 class="crm-form-select pixelInput" ng-required="isRequired">
             <option ng-repeat="option in optionsArray" value="{{option.value}}">{{option.name}}</option>
         </select>
