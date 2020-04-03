@@ -31,7 +31,7 @@
                     the maximum frequency these taks are being executed with.')}}
     </div>
     <div ng-switch-when="Always">
-        {{ts('he dispatcher (and therefore all active tasks) will be triggered')}}
+        {{ts('The dispatcher (and therefore all active tasks) will be triggered')}}
         <strong>{{ts('with
                         every cron-run')}}</strong>. {{ts('Ask your administrator how often that is, in order to know the effective
                     maximum
@@ -103,9 +103,9 @@
                 </a>
             </td>
             <td>
-                <span class="btn-slide crm-hover-button">
+                <span class="btn-slide crm-hover-button" ng-click="showPanelForTaskId(task.id)">
                     {{ts('Actions', {'domain' : 'de.systopia.sqltasks'})}}
-                    <ul class="panel">
+                    <ul ng-if="taskIdWithOpenPanel == task.id" class="panel">
                         <li>
                             <a ng-if="!getNumberFromString(task.input_required)"  class="action-item crm-hover-button"
                                href="javascript:;" title="{{ts('Confirm')}}"
