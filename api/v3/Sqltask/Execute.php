@@ -8,7 +8,6 @@
  * @return array
  */
 function civicrm_api3_sqltask_execute($params) {
-
   $exec_params = [
     'log_to_file' => $params['log_to_file'],
     'input_val' => $params['input_val'],
@@ -20,7 +19,7 @@ function civicrm_api3_sqltask_execute($params) {
       return civicrm_api3_create_error('Task(id=' . $params['id'] . ') does not exist.');
     }
 
-    if ($task->allowedToRun()) {
+    if (empty($params['check_permissions']) || $task->allowedToRun()) {
       $timestamp = microtime(TRUE);
       $result = $task->execute($exec_params);
       return civicrm_api3_create_success([
@@ -66,5 +65,12 @@ function _civicrm_api3_sqltask_execute_spec(&$params) {
     'type'         => CRM_Utils_Type::T_BOOLEAN,
     'title'        => 'Log to a file?',
     'description'  => 'Log task output to a file instead of returning it in the API results?',
+  );
+  $params['input_val'] = array(
+    'name'         => 'input_val',
+    'api.required' => 0,
+    'type'         => CRM_Utils_Type::T_STRING,
+    'title'        => 'Input Value',
+    'description'  => 'Input value with execution context. Will be forwarded to all actions',
   );
 }
