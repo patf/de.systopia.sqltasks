@@ -243,7 +243,7 @@ class CRM_Sqltasks_Upgrader extends CRM_Sqltasks_Upgrader_Base {
   }
 
   /**
-   * Update 'name' column in 'civicrm_sqltasks' table if column does exist
+   * Update 'name' column in 'civicrm_sqltasks' table
    * Sets max length to 255
    *
    * @return bool
@@ -251,14 +251,11 @@ class CRM_Sqltasks_Upgrader extends CRM_Sqltasks_Upgrader_Base {
    */
   public function upgrade_0110() {
     $this->ctx->log->info('Change character limit(set 255) for \'name\' column in \'civicrm_sqltasks\' table.');
-    $isColumnExists = CRM_Core_DAO::singleValueQuery("SHOW COLUMNS FROM `civicrm_sqltasks` LIKE 'name'");
-    if ($isColumnExists) {
-      CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_sqltasks` CHANGE COLUMN `name` `name` varchar(255) COMMENT 'name of the task'");
+    CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_sqltasks` CHANGE COLUMN `name` `name` varchar(255) COMMENT 'name of the task'");
 
-      // update rebuild log tables
-      $logging = new CRM_Logging_Schema();
-      $logging->fixSchemaDifferences();
-    }
+    // update rebuild log tables
+    $logging = new CRM_Logging_Schema();
+    $logging->fixSchemaDifferences();
 
     return TRUE;
   }
