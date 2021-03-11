@@ -69,222 +69,291 @@
                     </div>
                 </div>
                 <div class="sql-tasks-execution-wrap">
-                    <div class="crm-section">
-                        <div class="label">
-                            <label for="scheduled">
-                                {{ts('Execution')}}
-                                <span class="crm-marker" title="This field is required.">*</span>
-                            </label>
-                        </div>
-                        <div class="content">
-                            <select name="scheduled" id="scheduled" ng-change="onSchedulingOptionChange()"
-                                class="crm-form-select required" ng-model="taskOptions.scheduled">
-                                <option ng-repeat="(attribute, value) in schedulingOptions" value="{{attribute}}">{{value}}</option>
-                            </select>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
+					<div class="sql-tasks-execution-schedule-wrap">
+						<div class="sql-tasks-execution-preloader-wrap">
+							<div class="crm-container">
+								<div class="dataTables_processing"></div>
+							</div>
+						</div>
 
-                    <div id="advSchedule" style="display: block;">
-                        <div id="advSchedule-month" ng-if="shouldShowTimeFieldsByName('month')" class="crm-section" style="display: block;">
-                            <div class="label">
-                                <label for="scheduled_month">Month</label>&nbsp;
-                                <a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
-                                    href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
-                            </div>
-                            <div class="content">
-                                <select ng-model="config.scheduled_month" name="scheduled_month" id="scheduled_month" class="crm-form-select">
-                                    <option value="1" selected="selected">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
+						<div class="crm-section">
+							<div class="label">
+								<label for="executionScheduleStartDate">
+									{{ts('Execution schedule start date')}}
+								</label>
+							</div>
+							<div class="content">
+								<form><!-- this tag need to fix issue with datepicker: you redirect to another page after selecting date-->
+									<input style="width:150px;" ng-change="updateExecutionSchedule()" crm-ui-datepicker="{time: true}" ng-model="taskOptions.schedule_start_date" id="executionScheduleStartDate" />
+									<div class="clear"></div>
+								</form>
+							</div>
+							<div class="clear"></div>
+						</div>
 
-                        <div id="advSchedule-weekday" ng-if="shouldShowTimeFieldsByName('weekday')" class="crm-section" style="display: block;">
-                            <div class="label">
-                                <label for="scheduled_weekday">Weekday</label>&nbsp;
-                                  <a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
-                                    href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
-                            </div>
-                            <div class="content">
-                                <select ng-model="config.scheduled_weekday" name="scheduled_weekday" id="scheduled_weekday" class="crm-form-select">
-                                    <option value="1" selected="selected">Monday</option>
-                                    <option value="2">Tuesday</option>
-                                    <option value="3">Wednesday</option>
-                                    <option value="4">Thursday</option>
-                                    <option value="5">Friday</option>
-                                    <option value="6">Saturday</option>
-                                    <option value="7">Sunday</option>
-                                </select>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
+						<div class="crm-section">
+							<div class="label">
+								<label for="scheduled">
+									{{ts('Execution frequency')}}
+									<span class="crm-marker" title="This field is required.">*</span>
+								</label>
+							</div>
+							<div class="content">
+								<select name="scheduled" id="scheduled" ng-change="onSchedulingOptionChange()"
+									class="crm-form-select required" ng-model="taskOptions.scheduled">
+									<option ng-repeat="(attribute, value) in schedulingOptions" value="{{attribute}}">{{value}}</option>
+								</select>
+							</div>
+							<div class="clear"></div>
+						</div>
 
-                        <div id="advSchedule-day" ng-if="shouldShowTimeFieldsByName('day')" class="crm-section" style="display: block;">
-                            <div class="label">
-                                <label for="scheduled_day">Day</label>&nbsp;
-                                <a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
-                                    href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
-                            </div>
-                            <div class="content">
-                                <select ng-model="config.scheduled_day" name="scheduled_day" id="scheduled_day" class="crm-form-select">
-                                    <option value="1" selected="selected">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                    <option value="6">6</option>
-                                    <option value="7">7</option>
-                                    <option value="8">8</option>
-                                    <option value="9">9</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                    <option value="13">13</option>
-                                    <option value="14">14</option>
-                                    <option value="15">15</option>
-                                    <option value="16">16</option>
-                                    <option value="17">17</option>
-                                    <option value="18">18</option>
-                                    <option value="19">19</option>
-                                    <option value="20">20</option>
-                                    <option value="21">21</option>
-                                    <option value="22">22</option>
-                                    <option value="23">23</option>
-                                    <option value="24">24</option>
-                                    <option value="25">25</option>
-                                    <option value="26">26</option>
-                                    <option value="27">27</option>
-                                    <option value="28">28</option>
-                                    <option value="29">29</option>
-                                    <option value="30">30</option>
-                                    <option value="31">31</option>
-                                </select>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
+						<div id="advSchedule" style="display: block;">
+							<div id="advSchedule-month" ng-if="shouldShowTimeFieldsByName('month')" class="crm-section" style="display: block;">
+								<div class="label">
+									<label for="scheduled_month">Month</label>&nbsp;
+									<a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
+										href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
+								</div>
+								<div class="content">
+									<select ng-model="config.scheduled_month" name="scheduled_month" id="scheduled_month" class="crm-form-select" ng-change="updateExecutionSchedule()">
+										<option value="1" selected="selected">January</option>
+										<option value="2">February</option>
+										<option value="3">March</option>
+										<option value="4">April</option>
+										<option value="5">May</option>
+										<option value="6">June</option>
+										<option value="7">July</option>
+										<option value="8">August</option>
+										<option value="9">September</option>
+										<option value="10">October</option>
+										<option value="11">November</option>
+										<option value="12">December</option>
+									</select>
+								</div>
+								<div class="clear"></div>
+							</div>
 
-                        <div id="advSchedule-hour" ng-if="shouldShowTimeFieldsByName('hour')" class="crm-section" style="display: block;">
-                            <div class="label">
-                                <label for="scheduled_hour">Hour</label>&nbsp;
-                                <a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
-                                    href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
-                            </div>
-                            <div class="content">
-                                <select ng-model="config.scheduled_hour" name="scheduled_hour" id="scheduled_hour" class="crm-form-select">
-                                    <option value="0" selected="selected">00</option>
-                                    <option value="1">01</option>
-                                    <option value="2">02</option>
-                                    <option value="3">03</option>
-                                    <option value="4">04</option>
-                                    <option value="5">05</option>
-                                    <option value="6">06</option>
-                                    <option value="7">07</option>
-                                    <option value="8">08</option>
-                                    <option value="9">09</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                    <option value="13">13</option>
-                                    <option value="14">14</option>
-                                    <option value="15">15</option>
-                                    <option value="16">16</option>
-                                    <option value="17">17</option>
-                                    <option value="18">18</option>
-                                    <option value="19">19</option>
-                                    <option value="20">20</option>
-                                    <option value="21">21</option>
-                                    <option value="22">22</option>
-                                    <option value="23">23</option>
-                                </select>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
+							<div id="advSchedule-weekday" ng-if="shouldShowTimeFieldsByName('weekday')" class="crm-section" style="display: block;">
+								<div class="label">
+									<label for="scheduled_weekday">Weekday</label>&nbsp;
+									  <a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
+										href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
+								</div>
+								<div class="content">
+									<select ng-model="config.scheduled_weekday" name="scheduled_weekday" id="scheduled_weekday" class="crm-form-select" ng-change="updateExecutionSchedule()">
+										<option value="1" selected="selected">Monday</option>
+										<option value="2">Tuesday</option>
+										<option value="3">Wednesday</option>
+										<option value="4">Thursday</option>
+										<option value="5">Friday</option>
+										<option value="6">Saturday</option>
+										<option value="7">Sunday</option>
+									</select>
+								</div>
+								<div class="clear"></div>
+							</div>
 
-                        <div id="advSchedule-minute" ng-if="shouldShowTimeFieldsByName('minute')" class="crm-section">
-                            <div class="label">
-                                <label for="scheduled_minute">Minute</label>&nbsp;
-                                <a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
-                                    href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
-                            </div>
-                            <div class="content">
-                                <select ng-model="config.scheduled_minute" name="scheduled_minute" id="scheduled_minute" class="crm-form-select">
-                                    <option value="0" selected="selected">00</option>
-                                    <option value="1">01</option>
-                                    <option value="2">02</option>
-                                    <option value="3">03</option>
-                                    <option value="4">04</option>
-                                    <option value="5">05</option>
-                                    <option value="6">06</option>
-                                    <option value="7">07</option>
-                                    <option value="8">08</option>
-                                    <option value="9">09</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                    <option value="13">13</option>
-                                    <option value="14">14</option>
-                                    <option value="15">15</option>
-                                    <option value="16">16</option>
-                                    <option value="17">17</option>
-                                    <option value="18">18</option>
-                                    <option value="19">19</option>
-                                    <option value="20">20</option>
-                                    <option value="21">21</option>
-                                    <option value="22">22</option>
-                                    <option value="23">23</option>
-                                    <option value="24">24</option>
-                                    <option value="25">25</option>
-                                    <option value="26">26</option>
-                                    <option value="27">27</option>
-                                    <option value="28">28</option>
-                                    <option value="29">29</option>
-                                    <option value="30">30</option>
-                                    <option value="31">31</option>
-                                    <option value="32">32</option>
-                                    <option value="33">33</option>
-                                    <option value="34">34</option>
-                                    <option value="35">35</option>
-                                    <option value="36">36</option>
-                                    <option value="37">37</option>
-                                    <option value="38">38</option>
-                                    <option value="39">39</option>
-                                    <option value="40">40</option>
-                                    <option value="41">41</option>
-                                    <option value="42">42</option>
-                                    <option value="43">43</option>
-                                    <option value="44">44</option>
-                                    <option value="45">45</option>
-                                    <option value="46">46</option>
-                                    <option value="47">47</option>
-                                    <option value="48">48</option>
-                                    <option value="49">49</option>
-                                    <option value="50">50</option>
-                                    <option value="51">51</option>
-                                    <option value="52">52</option>
-                                    <option value="53">53</option>
-                                    <option value="54">54</option>
-                                    <option value="55">55</option>
-                                    <option value="56">56</option>
-                                    <option value="57">57</option>
-                                    <option value="58">58</option>
-                                    <option value="59">59</option>
-                                </select>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
-                    </div>
+							<div id="advSchedule-day" ng-if="shouldShowTimeFieldsByName('day')" class="crm-section" style="display: block;">
+								<div class="label">
+									<label for="scheduled_day">Day</label>&nbsp;
+									<a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
+										href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
+								</div>
+								<div class="content">
+									<select ng-model="config.scheduled_day" name="scheduled_day" id="scheduled_day" class="crm-form-select" ng-change="updateExecutionSchedule()">
+										<option value="1" selected="selected">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+										<option value="5">5</option>
+										<option value="6">6</option>
+										<option value="7">7</option>
+										<option value="8">8</option>
+										<option value="9">9</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+										<option value="13">13</option>
+										<option value="14">14</option>
+										<option value="15">15</option>
+										<option value="16">16</option>
+										<option value="17">17</option>
+										<option value="18">18</option>
+										<option value="19">19</option>
+										<option value="20">20</option>
+										<option value="21">21</option>
+										<option value="22">22</option>
+										<option value="23">23</option>
+										<option value="24">24</option>
+										<option value="25">25</option>
+										<option value="26">26</option>
+										<option value="27">27</option>
+										<option value="28">28</option>
+										<option value="29">29</option>
+										<option value="30">30</option>
+										<option value="31">31</option>
+									</select>
+								</div>
+								<div class="clear"></div>
+							</div>
+
+							<div id="advSchedule-hour" ng-if="shouldShowTimeFieldsByName('hour')" class="crm-section" style="display: block;">
+								<div class="label">
+									<label for="scheduled_hour">Hour</label>&nbsp;
+									<a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
+										href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
+								</div>
+								<div class="content">
+									<select ng-model="config.scheduled_hour" name="scheduled_hour" id="scheduled_hour" class="crm-form-select" ng-change="updateExecutionSchedule()">
+										<option value="0" selected="selected">00</option>
+										<option value="1">01</option>
+										<option value="2">02</option>
+										<option value="3">03</option>
+										<option value="4">04</option>
+										<option value="5">05</option>
+										<option value="6">06</option>
+										<option value="7">07</option>
+										<option value="8">08</option>
+										<option value="9">09</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+										<option value="13">13</option>
+										<option value="14">14</option>
+										<option value="15">15</option>
+										<option value="16">16</option>
+										<option value="17">17</option>
+										<option value="18">18</option>
+										<option value="19">19</option>
+										<option value="20">20</option>
+										<option value="21">21</option>
+										<option value="22">22</option>
+										<option value="23">23</option>
+									</select>
+								</div>
+								<div class="clear"></div>
+							</div>
+
+							<div id="advSchedule-minute" ng-if="shouldShowTimeFieldsByName('minute')" class="crm-section">
+								<div class="label">
+									<label for="scheduled_minute">Minute</label>&nbsp;
+									<a onclick='CRM.help("Specific Execution Time", {"id":"id-configure-exectime","file":"CRM\/Sqltasks\/Form\/Configure"}); return false;'
+										href="javascript:;" title="Help" class="helpicon">&nbsp;</a>
+								</div>
+								<div class="content">
+									<select ng-model="config.scheduled_minute" name="scheduled_minute" id="scheduled_minute" class="crm-form-select" ng-change="updateExecutionSchedule()">
+										<option value="0" selected="selected">00</option>
+										<option value="1">01</option>
+										<option value="2">02</option>
+										<option value="3">03</option>
+										<option value="4">04</option>
+										<option value="5">05</option>
+										<option value="6">06</option>
+										<option value="7">07</option>
+										<option value="8">08</option>
+										<option value="9">09</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+										<option value="13">13</option>
+										<option value="14">14</option>
+										<option value="15">15</option>
+										<option value="16">16</option>
+										<option value="17">17</option>
+										<option value="18">18</option>
+										<option value="19">19</option>
+										<option value="20">20</option>
+										<option value="21">21</option>
+										<option value="22">22</option>
+										<option value="23">23</option>
+										<option value="24">24</option>
+										<option value="25">25</option>
+										<option value="26">26</option>
+										<option value="27">27</option>
+										<option value="28">28</option>
+										<option value="29">29</option>
+										<option value="30">30</option>
+										<option value="31">31</option>
+										<option value="32">32</option>
+										<option value="33">33</option>
+										<option value="34">34</option>
+										<option value="35">35</option>
+										<option value="36">36</option>
+										<option value="37">37</option>
+										<option value="38">38</option>
+										<option value="39">39</option>
+										<option value="40">40</option>
+										<option value="41">41</option>
+										<option value="42">42</option>
+										<option value="43">43</option>
+										<option value="44">44</option>
+										<option value="45">45</option>
+										<option value="46">46</option>
+										<option value="47">47</option>
+										<option value="48">48</option>
+										<option value="49">49</option>
+										<option value="50">50</option>
+										<option value="51">51</option>
+										<option value="52">52</option>
+										<option value="53">53</option>
+										<option value="54">54</option>
+										<option value="55">55</option>
+										<option value="56">56</option>
+										<option value="57">57</option>
+										<option value="58">58</option>
+										<option value="59">59</option>
+									</select>
+								</div>
+								<div class="clear"></div>
+							</div>
+						</div>
+
+						<div class="crm-section">
+							<div class="label">
+								{{ts('Execution schedule')}}
+							</div>
+							<div class="content">
+								<div  ng-if="executionSchedule.length > 0" class="sql-tasks-execution-schedule-table">
+									<table class="row-highlight">
+										<tr>
+											<th></th>
+											<th>Planning execution date</th>
+											<th>Execute in time</th>
+										</tr>
+										<tr ng-repeat="scheduleItem in executionSchedule">
+											<td>
+												<span>{{scheduleItem.iteration}}</span>
+											</td>
+											<td>
+												<span>{{scheduleItem.execution_date_formatted}}</span>
+											</td>
+											<td>
+												<span>{{scheduleItem.execute_in_time}}</span>
+											</td>
+										</tr>
+									</table>
+									<div class="sql-tasks-execution-schedule-table-button-wrap">
+										<a class="sql-tasks-execution-schedule-table-button" ng-click='increaseExecutionScheduleLimit()' href="javascript:;">
+											<i class="crm-i fa-plus"></i>
+											<span>show more</span>
+										</a>
+										<a class="sql-tasks-execution-schedule-table-button" ng-if="executionScheduleLimit > executionScheduleLimitMin" ng-click='decreaseExecutionScheduleLimit()' href="javascript:;" >
+											<i class="crm-i fa-minus"></i>
+											<span>show less</span>
+										</a>
+									</div>
+									<div class="clear"></div>
+								</div>
+
+								<div ng-if="executionScheduleMessages.length > 0" class="sql-tasks-execution-schedule-massage-wrap">
+									<div ng-repeat="message in executionScheduleMessages" ng-class="{'status message' : message.type === 'info', 'crm-error' : message.type === 'error'}">
+										{{message.content}}
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
 
                     <div class="crm-section">
                         <div class="label">

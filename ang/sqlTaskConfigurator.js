@@ -60,6 +60,10 @@
         loaderService.resetData();
         $scope.isLoaded = true;
       }
+      $scope.executionSchedule = [];
+      $scope.executionScheduleMessages = [];
+      $scope.executionScheduleLimitMin = 3;
+      $scope.executionScheduleLimit = $scope.executionScheduleLimitMin;
       $scope.ts = CRM.ts();
       $scope.taskOptions = {
         scheduled: ""
@@ -159,6 +163,7 @@
               $scope.taskOptions.run_permissions = $scope.taskOptions.run_permissions.split(",");
             }
             $scope.$apply();
+            $scope.updateExecutionSchedule();
           }
         });
       }
@@ -210,6 +215,75 @@
               break;
           }
         });
+
+        $scope.updateExecutionSchedule();
+      };
+
+      $scope.updateExecutionSchedule = function() {
+        if ($scope.taskOptions.scheduled === '') {
+          return;
+        }
+
+        $scope.showExecutionBlockPreloader();
+
+        CRM.api3('sqltask', 'get_planning_schedule_dates', {
+          "sequential": 1,
+          "schedule_frequency": $scope.taskOptions.scheduled,
+          "schedule_month": parseInt($scope.config.scheduled_month),
+          "schedule_weekday": parseInt($scope.config.scheduled_weekday),
+          "schedule_day": parseInt($scope.config.scheduled_day),
+          "schedule_hour": parseInt($scope.config.scheduled_hour),
+          "schedule_minute": parseInt($scope.config.scheduled_minute),
+          "schedule_start_date": $scope.taskOptions.schedule_start_date,
+          "iteration_count": parseInt($scope.executionScheduleLimit),
+        }).then(function(result) {
+          if (result.is_error === 1) {
+            console.error('sqltask.get_planning_schedule_dates error:');
+            console.error(result.error_message);
+            $scope.cleanScheduleMessage();
+            $scope.showScheduleMessage(result.error_message, 'error');
+          } else {
+            $scope.cleanScheduleMessage();
+            $scope.executionSchedule = result.values.schedule;
+            $scope.executionScheduleMessages = result.values.messages;
+            $scope.$apply();
+          }
+          $scope.hideExecutionBlockPreloader();
+        }, function(error) {
+          $scope.hideExecutionBlockPreloader();
+        });
+      };
+
+      $scope.showExecutionBlockPreloader = function () {
+        $('.sql-tasks-execution-wrap').addClass('loading');
+      };
+
+      $scope.hideExecutionBlockPreloader = function () {
+        $('.sql-tasks-execution-wrap').removeClass('loading');
+      };
+      
+      $scope.showScheduleMessage = function (message, type) {
+        $scope.executionScheduleMessages.push({
+          'type' : type,
+          'content' : message,
+        });
+      };
+  
+      $scope.cleanScheduleMessage = function () {
+        $scope.executionScheduleMessages = [];
+      };
+
+      $scope.increaseExecutionScheduleLimit = function () {
+        $scope.executionScheduleLimit++;
+        $scope.updateExecutionSchedule();
+      };
+
+      $scope.decreaseExecutionScheduleLimit = function () {
+        $scope.executionScheduleLimit--;
+        if ($scope.executionScheduleLimit <= $scope.executionScheduleLimitMin) {
+          $scope.executionScheduleLimit = $scope.executionScheduleLimitMin;
+        }
+        $scope.updateExecutionSchedule();
       };
 
       var previousOrder = [];
@@ -418,7 +492,7 @@
           case "hour":
             return !["always", "hourly"].includes($scope.taskOptions.scheduled);
           case "day":
-            return !["always", "hourly", "daily"].includes(
+            return !["always", "hourly", "daily", "weekly"].includes(
               $scope.taskOptions.scheduled
             );
           case "weekday":
@@ -463,6 +537,7 @@
           $scope.taskOptions.input_required = template.input_required;
           $scope.taskOptions.abort_on_error = template.abort_on_error;
           $scope.$apply();
+          $scope.updateExecutionSchedule();
         });
       }
     });

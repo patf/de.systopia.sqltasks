@@ -23,24 +23,23 @@ use CRM_Sqltasks_ExtensionUtil as E;
 class CRM_Sqltasks_Task {
 
   protected static $main_attributes = [
-    'name'            => 'String',
-    'description'     => 'String',
-    'category'        => 'String',
-    'scheduled'       => 'String',
-    'enabled'         => 'Integer',
-    'weight'          => 'Integer',
-    'last_execution'  => 'Date',
-    'last_runtime'    => 'Integer',
-    'parallel_exec'   => 'Integer',
-    'run_permissions' => 'String',
-    'archive_date'    => 'String',
-    // REMOVED - DO NOT USE
-    'main_sql'        => 'String',
-    // REMOVED - DO NOT USE
-    'post_sql'        => 'String',
-    'input_required'  => 'Integer',
-    'abort_on_error'  => 'Integer',
-    'last_modified'   => 'Date'
+    'name'                 => 'String',
+    'description'          => 'String',
+    'category'             => 'String',
+    'scheduled'            => 'String',
+    'enabled'              => 'Integer',
+    'weight'               => 'Integer',
+    'last_execution'       => 'Date',
+    'last_runtime'         => 'Integer',
+    'parallel_exec'        => 'Integer',
+    'run_permissions'      => 'String',
+    'archive_date'         => 'String',
+    'main_sql'             => 'String', // REMOVED - DO NOT USE
+    'post_sql'             => 'String', // REMOVED - DO NOT USE
+    'input_required'       => 'Integer',
+    'abort_on_error'       => 'Integer',
+    'last_modified'        => 'Date',
+    'schedule_start_date'  => 'String',
   ];
 
   protected $task_id;
@@ -506,14 +505,25 @@ class CRM_Sqltasks_Task {
    * Get a list of tasks ready for execution
    */
   public static function getExecutionTaskList() {
-    return self::getTasks('SELECT * FROM civicrm_sqltasks WHERE enabled=1 ORDER BY weight ASC, id ASC');
+    return self::getTasks('
+      SELECT * FROM civicrm_sqltasks 
+      WHERE enabled = 1 
+        AND (schedule_start_date < NOW() OR schedule_start_date IS NULL)
+      ORDER BY weight ASC, id ASC
+    ');
   }
 
   /**
    * Get a list of tasks ready for execution
    */
   public static function getParallelExecutionTaskList() {
-    return self::getTasks('SELECT * FROM civicrm_sqltasks WHERE enabled=1 AND parallel_exec IN (1, 2) ORDER BY weight ASC, id ASC');
+    return self::getTasks('
+      SELECT * FROM civicrm_sqltasks 
+      WHERE enabled = 1 
+        AND parallel_exec IN (1, 2) 
+        AND (schedule_start_date < NOW() OR schedule_start_date IS NULL)
+      ORDER BY weight ASC, id ASC
+    ');
   }
 
   /**
@@ -617,6 +627,7 @@ class CRM_Sqltasks_Task {
     unset($config['last_execution']);
     unset($config['last_runtime']);
     unset($config['archive_date']);
+    unset($config['schedule_start_date']);
     $config['config'] = $this->config;
     return json_encode($config, JSON_PRETTY_PRINT);
   }
@@ -825,6 +836,22 @@ class CRM_Sqltasks_Task {
   }
 
   /**
+   * Get available frequencies
+   *
+   * @return array
+   */
+  public static function getAvailableFrequencies() {
+    return $frequencies = [
+      'always',
+      'hourly',
+      'daily',
+      'weekly',
+      'monthly',
+      'yearly',
+    ];
+  }
+
+  /**
    * Get the option for scheduling (simple version)
    */
   public static function getSchedulingOptions() {
@@ -877,6 +904,32 @@ class CRM_Sqltasks_Task {
   }
 
   /**
+   * Calculates the next execution date
+   * Returns date object
+   * When the job will be executed, on the first cron call after this date
+   *
+   * @return DateTime
+   * @throws Exception
+   */
+  public function getNextExecutionDate() {
+    $taskSchedule = CRM_Sqltasks_TaskSchedule::getScheduleForTask($this);
+
+    return $taskSchedule->getNextExecutionDate();
+  }
+
+  /**
+   * Calculates the next execution date
+   * Returns formatted date
+   * When the job will be executed, on the first cron call after this date
+   *
+   * @return string
+   * @throws Exception
+   */
+  public function getNextExecutionDateFormatted() {
+    return CRM_Utils_Date::customFormat($this->getNextExecutionDate()->format('Y-m-d H:i:s'));
+  }
+
+  /**
    * Get the list of all files that have been registered by the task
    *
    * @return array list of file metadata
@@ -901,26 +954,27 @@ class CRM_Sqltasks_Task {
    */
   public function getPreparedTask() {
     $data = [
-      'id'             => $this->getID(),
-      'name'           => $this->getAttribute('name'),
-      'description'    => $this->getAttribute('description'),
-      'short_desc'     => $this->prepareShortDescription($this->getAttribute('description')),
-      'category'       => $this->getAttribute('category'),
-      'schedule_label' => $this->prepareSchedule($this->getAttribute('scheduled')),
-      'schedule'       => $this->getAttribute('scheduled'),
-      'scheduled'      => $this->getAttribute('scheduled'),
-      'run_permissions'=> $this->getAttribute('run_permissions'),
-      'last_executed'  => $this->prepareDate($this->getAttribute('last_execution')),
-      'last_runtime'   => $this->prepareRuntime($this->getAttribute('last_runtime')),
-      'last_modified'  => $this->getAttribute("last_modified"),
-      'parallel_exec'  => $this->getAttribute('parallel_exec'),
-      'input_required' => $this->getAttribute('input_required'),
-      'next_execution' => 'TODO',
-      'enabled'        => (empty($this->getAttribute('enabled'))) ? 0 : 1,
-      'config'         => $this->getConfiguration(),
-      'is_archived'    => (int) $this->isArchived(),
-      'archive_date'   => (empty($this->getAttribute('archive_date'))) ? '' : $this->getAttribute('archive_date'),
-      'abort_on_error' => $this->getAttribute('abort_on_error'),
+      'id'                  => $this->getID(),
+      'name'                => $this->getAttribute('name'),
+      'description'         => $this->getAttribute('description'),
+      'short_desc'          => $this->prepareShortDescription($this->getAttribute('description')),
+      'category'            => $this->getAttribute('category'),
+      'schedule_label'      => $this->prepareSchedule($this->getAttribute('scheduled')),
+      'schedule'            => $this->getAttribute('scheduled'),
+      'scheduled'           => $this->getAttribute('scheduled'),
+      'run_permissions'     => $this->getAttribute('run_permissions'),
+      'last_executed'       => $this->prepareDate($this->getAttribute('last_execution')),
+      'last_runtime'        => $this->prepareRuntime($this->getAttribute('last_runtime')),
+      'last_modified'       => $this->getAttribute("last_modified"),
+      'parallel_exec'       => $this->getAttribute('parallel_exec'),
+      'input_required'      => $this->getAttribute('input_required'),
+      'next_execution'      => 'TODO',
+      'enabled'             => (empty($this->getAttribute('enabled'))) ? 0 : 1,
+      'config'              => $this->getConfiguration(),
+      'is_archived'         => (int) $this->isArchived(),
+      'archive_date'        => (empty($this->getAttribute('archive_date'))) ? '' : $this->getAttribute('archive_date'),
+      'abort_on_error'      => $this->getAttribute('abort_on_error'),
+      'schedule_start_date' => $this->getAttribute('schedule_start_date'),
     ];
 
     return $data;

@@ -11,7 +11,7 @@
 function civicrm_api3_sqltask_create($params) {
   $taskParamNames = [
     'name', 'description', 'category', 'scheduled', 'parallel_exec',
-    'input_required','enabled', 'weight', 'run_permissions', 'abort_on_error'
+    'input_required','enabled', 'weight', 'run_permissions', 'abort_on_error', 'schedule_start_date'
   ];
 
   $booleanParams = ['input_required', 'enabled', 'abort_on_error'];
@@ -206,5 +206,12 @@ function _civicrm_api3_sqltask_create_spec(&$params) {
     'type'         => CRM_Utils_Type::T_STRING,
     'title'        => 'Last Modification Date',
     'description'  => 'Date/Time of the last configuration change',
+  ];
+
+  $params['schedule_start_date'] = [
+    'name'         => 'schedule_start_date',
+    'api.required' => 0,
+    'type'         => CRM_Utils_Type::T_STRING,
+    'title'        => 'Schedule start date',
   ];
 }

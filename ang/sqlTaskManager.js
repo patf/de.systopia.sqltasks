@@ -237,7 +237,35 @@
         $scope.updatePreviousTaskOrder();
       };
 
-      $scope.onToggleEnablePress = function(taskId, value) {
+      $scope.disableTask = function(taskId) {
+        $scope.toggleEnableTask(taskId, 0);
+      };
+
+      $scope.onChangeScheduleStartDate = function(scheduleStartDate, taskId) {
+        var indexTasks = $scope.tasks.findIndex(task => task.id === taskId);
+        $scope.tasks[indexTasks]['schedule_start_date'] = scheduleStartDate;
+      };
+
+      $scope.confirmTaskEnabling = function(taskId) {
+        $scope.setTaskScheduleStartDate(taskId);
+        $scope.toggleEnableTask(taskId, 1);
+      };
+
+      $scope.setTaskScheduleStartDate = function(taskId) {
+        var indexTasks = $scope.tasks.findIndex(task => task.id === taskId);
+        CRM.api3("Sqltask", "create", {
+          id: taskId,
+          schedule_start_date: $scope.tasks[indexTasks]['schedule_start_date']
+        }).done(function(result) {
+          if (result.values && !result.is_error) {
+            CRM.alert(ts('Task schedule start date has successfully updated!'), 'Task updating', "success");
+          } else {
+            CRM.alert(result.error_message, ts('Error updating task schedule start date'), "error");
+          }
+        });
+      };
+
+      $scope.toggleEnableTask = function(taskId, value) {
         CRM.api3("Sqltask", "create", {
           id: taskId,
           enabled: value
@@ -341,5 +369,87 @@
       }
     }
   }));
+
+  angular.module(moduleName).directive("taskSchedule", function() {
+    return {
+      restrict: "E",
+      templateUrl: "~/sqlTaskManager/taskSchedule.html",
+      scope: {
+        model: "=",
+        taskId: "<taskid",
+        scheduleStartDate: "<schedulestartdate",
+      },
+      bindToController: true,
+      controllerAs: "ctrl",
+      controller: function($scope, $window, $element) {
+        $scope.schedule = [];
+        $scope.messages = [];
+        $scope.limitMin = 3;
+        $scope.scheduleStartDate = $scope.ctrl.scheduleStartDate;
+        $scope.limit = $scope.limitMin;
+        $scope.onChangeStartDate = $scope.$parent.onChangeScheduleStartDate;
+        $scope.ts = CRM.ts();
+
+        $scope.updateSchedule = function() {
+          $scope.showPreloader();
+          CRM.api3('sqltask', 'get_schedule_dates', {
+            "sequential": 1,
+            "task_id": $scope.ctrl.taskId,
+            "iteration_count": parseInt($scope.limit),
+            "planning_start_schedule_date": $scope.scheduleStartDate,
+          }).then(function(result) {
+            if (result.is_error === 1) {
+              console.error('sqltask.get_schedule_dates error:');
+              console.error(result.error_message);
+              $scope.cleanMessage();
+              $scope.showMessage(result.error_message, 'error');
+            } else {
+              $scope.cleanMessage();
+              $scope.schedule = result.values.schedule;
+              $scope.messages = result.values.messages;
+              $scope.$apply();
+            }
+            $scope.hidePreloader();
+          }, function(error) {
+            $scope.hidePreloader();
+          });
+        };
+
+        $scope.showPreloader = function () {
+          $($element).find('.sql-task-manager-schedule').addClass('loading');
+        };
+
+        $scope.hidePreloader = function () {
+          $($element).find('.sql-task-manager-schedule').removeClass('loading');
+        };
+
+        $scope.showMessage = function (message, type) {
+          $scope.messages.push({
+            'type' : type,
+            'content' : message,
+          });
+        };
+
+        $scope.cleanMessage = function () {
+          $scope.messages = [];
+        };
+
+        $scope.increaseLimit = function () {
+          $scope.limit++;
+          $scope.updateSchedule();
+        };
+
+        $scope.decreaseLimit = function () {
+          $scope.limit--;
+          if ($scope.limit <= $scope.limitMin) {
+            $scope.limit = $scope.limitMin;
+          }
+          $scope.updateSchedule();
+        };
+
+        $scope.updateSchedule();
+      }
+    };
+  });
 
 })(angular, CRM.$, CRM._);
