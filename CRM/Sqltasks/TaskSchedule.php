@@ -136,17 +136,17 @@ class CRM_Sqltasks_TaskSchedule {
     if (is_null($startDate)) {
       $this->startDate = $this->now ;
     } elseif($startDate == '') {
-      $this->addInfoMessage('Schedule start date is empty. Task schedule generates form now time.');
+      $this->addInfoMessage('Schedule start date is empty. Assuming task should start immediately.');
       $this->startDate = $this->now;
     } else {
       try {
         $this->startDate = new DateTime($startDate);
       } catch (Exception $e) {
-        throw new API_Exception('Invalid start schedule date(' . $startDate . '). Error message: ' . $e->getMessage());
+        throw new API_Exception('Invalid start schedule date ' . $startDate . '. Error message: ' . $e->getMessage());
       }
 
       if ($this->startDate < $this->now) {
-        $this->addInfoMessage('"schedule start date" is older then now. Task schedule generates form now time.');
+        $this->addInfoMessage('Schedule start date is in the past. Assuming task should start immediately.');
         $this->startDate = $this->now;
       }
     }
@@ -272,9 +272,9 @@ class CRM_Sqltasks_TaskSchedule {
 
     if ($this->frequency == 'always') {
       if ($this->startDate > $this->now) {
-        $this->addInfoMessage('Frequency is "always". After "schedule start date" task will executed The task will be executed each time when CiviCRM cron is running.');
+        $this->addInfoMessage('Frequency is "always". After "schedule start date" the task will be executed with every CiviCRM cron.');
       } else {
-        $this->addInfoMessage('Frequency is "always". The task will be executed each time when CiviCRM cron is running.');
+        $this->addInfoMessage('Frequency is "always". The task will be executed with every CiviCRM cron.');
       }
     }
 
