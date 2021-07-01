@@ -8,6 +8,15 @@
  * @return array
  */
 function civicrm_api3_sqltask_get_planning_schedule_dates($params) {
+  // it fixes error when php cannot parse string
+  // replaces space to regular space
+  if (isset($params['last_execution'])) {
+    $params['last_execution'] = str_replace(chr(160),' ', $params['last_execution']);
+  }
+  if (isset($params['schedule_start_date'])) {
+    $params['schedule_start_date'] = str_replace(chr(160),' ', $params['schedule_start_date']);
+  }
+
   $taskSchedule = new CRM_Sqltasks_TaskSchedule(
     $params['schedule_frequency'],
     isset($params['schedule_month']) ? $params['schedule_month'] : null,
@@ -15,7 +24,8 @@ function civicrm_api3_sqltask_get_planning_schedule_dates($params) {
     isset($params['schedule_day']) ? $params['schedule_day'] : null,
     isset($params['schedule_hour']) ? $params['schedule_hour'] : null,
     isset($params['schedule_minute']) ? $params['schedule_minute'] : null,
-    isset($params['schedule_start_date']) ? $params['schedule_start_date'] : null
+    isset($params['schedule_start_date']) ? $params['schedule_start_date'] : null,
+    isset($params['last_execution']) ? $params['last_execution'] : null
   );
 
   if (!empty($params['iteration_count'])) {
@@ -80,6 +90,12 @@ function _civicrm_api3_sqltask_get_planning_schedule_dates_spec(&$params) {
     'api.required' => 0,
     'type' => CRM_Utils_Type::T_STRING,
     'title' => 'Schedule start date',
+  ];
+  $params['last_execution'] = [
+    'name' => 'last_execution',
+    'api.required' => 0,
+    'type' => CRM_Utils_Type::T_STRING,
+    'title' => 'Last execution date',
   ];
   $params['iteration_count'] = [
     'name' => 'iteration_count',

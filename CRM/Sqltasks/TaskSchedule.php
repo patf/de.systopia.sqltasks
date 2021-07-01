@@ -13,6 +13,13 @@ class CRM_Sqltasks_TaskSchedule {
   private $startDate;
 
   /**
+   * Last execution date
+   *
+   * @var DateTime
+   */
+  private $lastExecutionDate;
+
+  /**
    * Schedule frequency
    *
    * @var string
@@ -80,7 +87,7 @@ class CRM_Sqltasks_TaskSchedule {
    * @param string $startDate
    * @throws Exception
    */
-  public function __construct($frequency, $month = 0, $weekday = null, $day = 0, $hour = 0, $minute = 0, $startDate = null) {
+  public function __construct($frequency, $month = 0, $weekday = null, $day = 0, $hour = 0, $minute = 0, $startDate = null, $lastExecutionDate = null) {
     if (!in_array($frequency, CRM_Sqltasks_Task::getAvailableFrequencies())) {
       throw new API_Exception('Invalid frequency(' . $frequency . ').');
     }
@@ -124,6 +131,16 @@ class CRM_Sqltasks_TaskSchedule {
     $this->minute = (int) $minute;
     $this->now = new DateTime();
     $this->setStartDate($startDate);
+
+    if (empty($lastExecutionDate)) {
+      $this->lastExecutionDate = null;
+    } else {
+      try {
+        $this->lastExecutionDate = new DateTime($lastExecutionDate);
+      } catch (Exception $e) {
+        throw new API_Exception('Invalid last execution date ' . $lastExecutionDate . '. Error message: ' . $e->getMessage());
+      }
+    }
   }
 
   /**
@@ -185,7 +202,8 @@ class CRM_Sqltasks_TaskSchedule {
       $config['scheduled_day'],
       $config['scheduled_hour'],
       $config['scheduled_minute'],
-      $task->getAttribute('schedule_start_date')
+      $task->getAttribute('schedule_start_date'),
+      $task->getAttribute('last_execution')
     );
   }
 
@@ -276,6 +294,24 @@ class CRM_Sqltasks_TaskSchedule {
       } else {
         $this->addInfoMessage('Frequency is "always". The task will be executed with every CiviCRM cron.');
       }
+
+      $schedule[] = [
+        'iteration' => 0,
+        'execution_date' => '',
+        'execution_date_formatted' => CRM_Sqltasks_TaskSchedule::getNextExecutionMessage(),
+        'execute_in_time' => '-',
+      ];
+
+      return $schedule;
+    }
+
+    if ($this->isTaskShouldRun()) {
+      $schedule[] = [
+        'iteration' => 0,
+        'execution_date' => '',
+        'execution_date_formatted' => CRM_Sqltasks_TaskSchedule::getNextExecutionMessage(),
+        'execute_in_time' => '-',
+      ];
     }
 
     for ($i = 1; $i <= $iterationCount; $i++) {
@@ -312,6 +348,18 @@ class CRM_Sqltasks_TaskSchedule {
     }
 
     return $schedule;
+  }
+
+  /**
+   * Is tasks should run?
+   * TODO: use isTaskShouldRun instead of CRM_Sqltasks_Task->shouldRun(). Because the logic is duplicated.
+   *
+   * @return bool
+   * @throws Exception
+   */
+  public function isTaskShouldRun() {
+    $nexExecutionDate = $this->getNextExecutionDate();
+    return $this->now >= $nexExecutionDate && $this->lastExecutionDate < $nexExecutionDate;
   }
 
   /**
@@ -391,6 +439,13 @@ class CRM_Sqltasks_TaskSchedule {
       'type' => 'info',
       'content' => $message,
     ];
+  }
+
+  /**
+   * @return string
+   */
+  public static function getNextExecutionMessage() {
+    return ts("Next cron task execution");
   }
 
 }

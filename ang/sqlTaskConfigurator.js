@@ -236,6 +236,7 @@
           "schedule_minute": parseInt($scope.config.scheduled_minute),
           "schedule_start_date": $scope.taskOptions.schedule_start_date,
           "iteration_count": parseInt($scope.executionScheduleLimit),
+          "last_execution": $scope.taskOptions.last_executed,
         }).then(function(result) {
           if (result.is_error === 1) {
             console.error('sqltask.get_planning_schedule_dates error:');
@@ -261,14 +262,14 @@
       $scope.hideExecutionBlockPreloader = function () {
         $('.sql-tasks-execution-wrap').removeClass('loading');
       };
-      
+
       $scope.showScheduleMessage = function (message, type) {
         $scope.executionScheduleMessages.push({
           'type' : type,
           'content' : message,
         });
       };
-  
+
       $scope.cleanScheduleMessage = function () {
         $scope.executionScheduleMessages = [];
       };

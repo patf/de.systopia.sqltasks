@@ -506,8 +506,8 @@ class CRM_Sqltasks_Task {
    */
   public static function getExecutionTaskList() {
     return self::getTasks('
-      SELECT * FROM civicrm_sqltasks 
-      WHERE enabled = 1 
+      SELECT * FROM civicrm_sqltasks
+      WHERE enabled = 1
         AND (schedule_start_date < NOW() OR schedule_start_date IS NULL)
       ORDER BY weight ASC, id ASC
     ');
@@ -518,9 +518,9 @@ class CRM_Sqltasks_Task {
    */
   public static function getParallelExecutionTaskList() {
     return self::getTasks('
-      SELECT * FROM civicrm_sqltasks 
-      WHERE enabled = 1 
-        AND parallel_exec IN (1, 2) 
+      SELECT * FROM civicrm_sqltasks
+      WHERE enabled = 1
+        AND parallel_exec IN (1, 2)
         AND (schedule_start_date < NOW() OR schedule_start_date IS NULL)
       ORDER BY weight ASC, id ASC
     ');

@@ -14,6 +14,12 @@ function civicrm_api3_sqltask_create($params) {
     'input_required','enabled', 'weight', 'run_permissions', 'abort_on_error', 'schedule_start_date'
   ];
 
+  // it fixes error when php cannot parse string
+  // replaces space to regular space
+  if (isset($params['schedule_start_date'])) {
+    $params['schedule_start_date'] = str_replace(chr(160),' ', $params['schedule_start_date']);
+  }
+
   $booleanParams = ['input_required', 'enabled', 'abort_on_error'];
   foreach ($booleanParams as $booleanParam) {
     if (array_key_exists($booleanParam, $params) && !($params[$booleanParam] == '1' || $params[$booleanParam] == '0')) {
