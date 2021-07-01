@@ -359,7 +359,12 @@ class CRM_Sqltasks_TaskSchedule {
    */
   public function isTaskShouldRun() {
     $nexExecutionDate = $this->getNextExecutionDate();
-    return $this->now >= $nexExecutionDate && $this->lastExecutionDate < $nexExecutionDate;
+    $lastExecutionDate = $this->lastExecutionDate;
+    if (empty($lastExecutionDate)) {
+      $lastExecutionDate = new DateTime('1970-01-01');
+    }
+
+    return $this->now >= $nexExecutionDate && $lastExecutionDate < $nexExecutionDate;
   }
 
   /**
