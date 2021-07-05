@@ -954,27 +954,28 @@ class CRM_Sqltasks_Task {
    */
   public function getPreparedTask() {
     $data = [
-      'id'                  => $this->getID(),
-      'name'                => $this->getAttribute('name'),
-      'description'         => $this->getAttribute('description'),
-      'short_desc'          => $this->prepareShortDescription($this->getAttribute('description')),
-      'category'            => $this->getAttribute('category'),
-      'schedule_label'      => $this->prepareSchedule($this->getAttribute('scheduled')),
-      'schedule'            => $this->getAttribute('scheduled'),
-      'scheduled'           => $this->getAttribute('scheduled'),
-      'run_permissions'     => $this->getAttribute('run_permissions'),
-      'last_executed'       => $this->prepareDate($this->getAttribute('last_execution')),
-      'last_runtime'        => $this->prepareRuntime($this->getAttribute('last_runtime')),
-      'last_modified'       => $this->getAttribute("last_modified"),
-      'parallel_exec'       => $this->getAttribute('parallel_exec'),
-      'input_required'      => $this->getAttribute('input_required'),
-      'next_execution'      => 'TODO',
-      'enabled'             => (empty($this->getAttribute('enabled'))) ? 0 : 1,
-      'config'              => $this->getConfiguration(),
-      'is_archived'         => (int) $this->isArchived(),
-      'archive_date'        => (empty($this->getAttribute('archive_date'))) ? '' : $this->getAttribute('archive_date'),
-      'abort_on_error'      => $this->getAttribute('abort_on_error'),
-      'schedule_start_date' => $this->getAttribute('schedule_start_date'),
+      'id'                       => $this->getID(),
+      'name'                     => $this->getAttribute('name'),
+      'description'              => $this->getAttribute('description'),
+      'short_desc'               => $this->prepareShortDescription($this->getAttribute('description')),
+      'category'                 => $this->getAttribute('category'),
+      'schedule_label'           => $this->prepareSchedule($this->getAttribute('scheduled')),
+      'schedule'                 => $this->getAttribute('scheduled'),
+      'scheduled'                => $this->getAttribute('scheduled'),
+      'run_permissions'          => $this->getAttribute('run_permissions'),
+      'last_execution_formatted' => $this->prepareDate($this->getAttribute('last_execution')),
+      'last_execution'           => (empty($this->getAttribute('last_execution'))) ? '' : $this->getAttribute('last_execution'),
+      'last_runtime'             => $this->prepareRuntime($this->getAttribute('last_runtime')),
+      'last_modified'            => $this->getAttribute("last_modified"),
+      'parallel_exec'            => $this->getAttribute('parallel_exec'),
+      'input_required'           => $this->getAttribute('input_required'),
+      'next_execution'           => 'TODO',
+      'enabled'                  => (empty($this->getAttribute('enabled'))) ? 0 : 1,
+      'config'                   => $this->getConfiguration(),
+      'is_archived'              => (int) $this->isArchived(),
+      'archive_date'             => (empty($this->getAttribute('archive_date'))) ? '' : $this->getAttribute('archive_date'),
+      'abort_on_error'           => $this->getAttribute('abort_on_error'),
+      'schedule_start_date'      => $this->getAttribute('schedule_start_date'),
     ];
 
     return $data;
@@ -995,7 +996,7 @@ class CRM_Sqltasks_Task {
   }
 
   /**
-   * Prepares a date
+   * Prepares a date to show in frontend
    *
    * @param $string
    *
