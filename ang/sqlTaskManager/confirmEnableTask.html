@@ -1,0 +1,19 @@
+<div class="sql-task-manager-confirm-enable-task-dialog">
+	<div class="crm-block crm-form-block">
+		<p class="help">
+			{{ts('Set the schedule start date to the earliest possible date the task should execute.')}}
+			{{ts('If you don\'t set a start date, the task may be executed immediately depending on the schedule and last execution date.')}}
+		</p>
+		<p><strong>{{ts('Current frequency: ')}}</strong>{{frequency}}</p>
+
+		<div class="crm-section">
+			<div class="sql-task-manager-confirm-enable-task-dialog-schedule-wrap">
+				<task-schedule scheduleStartDate="scheduleStartDate" taskId="taskId"></task-schedule>
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>
+</div>
+
+
+

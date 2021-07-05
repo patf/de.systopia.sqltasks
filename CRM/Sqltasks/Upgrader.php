@@ -383,4 +383,31 @@ class CRM_Sqltasks_Upgrader extends CRM_Sqltasks_Upgrader_Base {
     return true;
   }
 
+  /**
+   * Adds 'schedule_start_date' column to 'civicrm_sqltasks' table if column doesn't exist
+   */
+  public function addScheduleStartDateColumn () {
+    $column_exists = CRM_Core_DAO::singleValueQuery("SHOW COLUMNS FROM `civicrm_sqltasks` LIKE 'schedule_start_date';");
+
+    if (!$column_exists) {
+      $this->ctx->log->info("Adding column `schedule_start_date` datetime NULL DEFAULT NULL to table `civicrm_sqltasks`");
+      CRM_Core_DAO::executeQuery("ALTER TABLE `civicrm_sqltasks` ADD COLUMN `schedule_start_date` datetime NULL DEFAULT NULL COMMENT 'schedule start date'");
+      $logging = new CRM_Logging_Schema();
+      $logging->fixSchemaDifferences();
+    }
+  }
+
+  /**
+   * Runs upgrade
+   * - Adds 'schedule_start_date' column to 'civicrm_sqltasks' table if column doesn't exist
+   *
+   * @return bool
+   * @throws \Exception
+   */
+  public function upgrade_0160() {
+    $this->addScheduleStartDateColumn();
+
+    return TRUE;
+  }
+
 }

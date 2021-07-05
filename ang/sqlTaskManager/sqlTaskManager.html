@@ -152,7 +152,7 @@
               </td>
               <td>
                   <div class="sql-task-table-column-last-executed">
-                      {{task.last_executed}}
+                      {{task.last_execution_formatted}}
                   </div>
               </td>
               <td>{{task.last_runtime}}</td>
@@ -195,14 +195,18 @@
                               </a>
                           </li>
                           <li ng-if="!getNumberFromString(task.is_archived)" >
-                              <a ng-if="getNumberFromString(task.enabled)" ng-click="onToggleEnablePress(task.id, 0)"
+                              <a ng-if="getNumberFromString(task.enabled)" ng-click="toggleEnableTask(task.id, 0)"
                                   class="action-item crm-hover-button small-popup"
                                   title="{{ts('Disable for scheduled execution', {'domain' : 'de.systopia.sqltasks'})}}">
                                   {{ts('Disable', {'domain' : 'de.systopia.sqltasks'})}}
                               </a>
-                              <a ng-if="!getNumberFromString(task.enabled)" ng-click="onToggleEnablePress(task.id, 1)"
-                                  class="action-item crm-hover-button small-popup"
-                                  title="{{ts('Enable for scheduled execution', {'domain' : 'de.systopia.sqltasks'})}}">
+
+                              <a ng-if="!getNumberFromString(task.enabled)"
+								class="action-item crm-hover-button small-popup"
+								title="{{ts('Enable for scheduled execution', {'domain' : 'de.systopia.sqltasks'})}}"
+								title="{{ts('Confirm')}}"
+								crm-confirm="{title: ts('Are you sure you want to enable this task?'), export: {frequency : task.scheduled, scheduleStartDate : task.schedule_start_date, taskId : task.id, ts:ts, onChangeScheduleStartDate, onChangeScheduleStartDate}, templateUrl: '~/sqlTaskManager/confirmEnableTask.html', top : '30%' ,width: '40%'}"
+								on-yes="confirmTaskEnabling(task.id)">
                                   {{ts('Enable', {'domain' : 'de.systopia.sqltasks'})}}
                               </a>
                           </li>

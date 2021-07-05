@@ -173,3 +173,47 @@ select.pixelInput {
   border: dotted 5px #c9c9c9;
   height: 50px;
 }
+
+.sql-tasks-execution-schedule-massage-wrap {
+  max-width: 500px;
+  box-sizing: border-box;
+  border: 1px solid #e8eef0;
+}
+
+.sql-tasks-execution-schedule-massage {
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.sql-tasks-execution-schedule-wrap {
+  position: relative;
+}
+
+.sql-tasks-execution-preloader-wrap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  background: rgba(87, 87, 87, 0.11);
+  display: none;
+}
+
+.sql-tasks-execution-schedule-table-button-wrap {
+  padding: 5px 20px;
+}
+
+.sql-tasks-execution-schedule-table-button {
+  padding-right: 25px;
+}
+
+.sql-tasks-execution-wrap.loading .sql-tasks-execution-preloader-wrap {
+  display: block;
+}
+
+.sql-tasks-execution-schedule-table {
+  max-width: 500px;
+  border-left: 1px solid #e8eef0;
+  border-right: 1px solid #e8eef0;
+  border-bottom: 1px solid #e8eef0;
+  box-sizing: border-box;
+}

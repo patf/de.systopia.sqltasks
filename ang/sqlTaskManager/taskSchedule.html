@@ -1,0 +1,69 @@
+<div class="sql-task-manager-schedule">
+	<div class="sql-task-manager-schedule-preloader-wrap">
+		<div class="crm-container">
+			<div class="dataTables_processing"></div>
+		</div>
+	</div>
+
+	<div class="crm-section">
+		<div>
+			<label for="scheduleStartDate">
+				{{ts('Execution schedule start date:')}}
+			</label>
+		</div>
+		<div>
+			<form><!-- this tag need to fix issue with datepicker: you redirect to another page after selecting date-->
+				<input style="width:150px;" ng-change="updateSchedule(); onChangeStartDate(scheduleStartDate, ctrl.taskId);" crm-ui-datepicker="{time: true}" ng-model="scheduleStartDate" id="scheduleStartDate" />
+				<div class="clear"></div>
+			</form>
+		</div>
+		<div class="clear"></div>
+	</div>
+
+	<div class="crm-section">
+		<div  ng-if="schedule.length > 0" class="sql-tasks-execution-schedule-table">
+			<table class="row-highlight">
+				<tr>
+					<th></th>
+					<th>Planned execution date</th>
+					<th>Time from now</th>
+				</tr>
+				<tr ng-repeat="scheduleItem in schedule">
+					<td>
+						<span>{{scheduleItem.iteration}}</span>
+					</td>
+					<td>
+						<span>{{scheduleItem.execution_date_formatted}}</span>
+					</td>
+					<td>
+						<span>{{scheduleItem.execute_in_time}}</span>
+					</td>
+				</tr>
+			</table>
+			<div class="sql-tasks-execution-schedule-table-button-wrap">
+				<a class="sql-tasks-execution-schedule-table-button" ng-click='increaseLimit()' href="javascript:;">
+					<i class="crm-i fa-plus"></i>
+					<span>show more</span>
+				</a>
+				<a class="sql-tasks-execution-schedule-table-button" ng-if="limit > limitMin" ng-click='decreaseLimit()' href="javascript:;" >
+					<i class="crm-i fa-minus"></i>
+					<span>show less</span>
+				</a>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="clear"></div>
+	</div>
+
+
+	<div class="crm-section">
+		<div ng-if="messages.length > 0" class="sql-tasks-execution-schedule-massage-wrap">
+			<div ng-repeat="message in messages" ng-class="{'status message' : message.type === 'info', 'crm-error' : message.type === 'error'}">
+				{{message.content}}
+			</div>
+		</div>
+
+		<div class="clear"></div>
+	</div>
+
+</div>

@@ -140,3 +140,24 @@
 .sql-task-manager-new-task-panel div.content select {
   min-width: 300px;
 }
+
+.sql-task-manager-confirm-enable-task-dialog-schedule {
+  padding-top: 20px;
+}
+
+.sql-task-manager-schedule.loading .sql-task-manager-schedule-preloader-wrap {
+  display: block;
+}
+
+.sql-task-manager-schedule {
+  position: relative;
+}
+
+.sql-task-manager-schedule-preloader-wrap {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  background: rgba(87, 87, 87, 0.11);
+  display: none;
+}
