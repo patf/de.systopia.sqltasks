@@ -1005,7 +1005,7 @@ class CRM_Sqltasks_Task {
     if (empty($string)) {
       return E::ts('never');
     } else {
-      return date('Y-m-d H:i:s', strtotime($string));
+      return date('Y-m-d H:i:s', strtotime($string));
     }
   }
 

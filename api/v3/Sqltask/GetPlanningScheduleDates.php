@@ -8,15 +8,6 @@
  * @return array
  */
 function civicrm_api3_sqltask_get_planning_schedule_dates($params) {
-  // it fixes error when php cannot parse string
-  // replaces space to regular space
-  if (isset($params['last_execution'])) {
-    $params['last_execution'] = str_replace(chr(160),' ', $params['last_execution']);
-  }
-  if (isset($params['schedule_start_date'])) {
-    $params['schedule_start_date'] = str_replace(chr(160),' ', $params['schedule_start_date']);
-  }
-
   $taskSchedule = new CRM_Sqltasks_TaskSchedule(
     $params['schedule_frequency'],
     isset($params['schedule_month']) ? $params['schedule_month'] : null,
